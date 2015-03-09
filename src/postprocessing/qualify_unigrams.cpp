@@ -102,11 +102,17 @@ int main(int argc, char *argv[])
     
     cerr << unigrams.size() << endl;
     cerr << phrases.size() << endl;
-    
+
+    vector<string> unigramList;
     FOR (unigram, unigrams) {
-        const string &key = unigram->first;
+        unigramList.push_back(unigram->first);
+    }
+   
+    #pragma omp parallel for
+    for (int i = 0; i < unigramList.size(); ++ i) {
+        const string &key = unigramList[i];
         if (!word2vec.count(key)) {
-            unigram->second = 0;
+            unigrams[key] = 0;
             continue;
         }
         //cerr << key << endl;
@@ -119,13 +125,21 @@ int main(int argc, char *argv[])
                 //cerr << key << " v.s. " << p << endl;
                 const vector<double> &vp = word2vec[p];
                 double dot = 0;
+                double sum1 = 1, sum2 = 1;
                 for (size_t i = 0; i < vp.size(); ++ i) {
                     dot += vp[i] * v[i];
+                    sum1 -= vp[i] * vp[i];
+                    sum2 -= v[i] * v[i];
+                    if (heap.size() && -heap.top().first >= dot + sqrt(sum1 * sum2)) {
+                        break;
+                    }
                 }
                 maxi = max(maxi, dot);
-                heap.push(make_pair(-dot, -phrase->second));
-                if (heap.size() > K) {
-                    heap.pop();
+                if (heap.size() == 0 || dot > -heap.top().first) {
+                    heap.push(make_pair(-dot, -phrase->second));
+                    if (heap.size() > K) {
+                        heap.pop();
+                    }
                 }
             }
         }
@@ -141,7 +155,7 @@ int main(int argc, char *argv[])
             
             heap.pop();
         }
-        unigram->second = sum / sum_weight;
+        unigrams[key] = sum / sum_weight;
         //cerr << key << " " << sum / sum_weight;
     }
 
