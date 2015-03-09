@@ -73,10 +73,10 @@ void loadPatterns(string folder)
             vector<string> tokens = splitBy(line, ',');
             string phrase = tokens[0];
             double prob;
-            fromString(tokens[2], prob);
+            fromString(tokens[3], prob);
             
             if (length == 1) {
-                unigrams[phrase] = prob;
+                unigrams[phrase] = 0;//prob;
             } else {
                 for (size_t i = 0; i < phrase.size(); ++ i) {
                     if (phrase[i] == ' ') {
@@ -105,10 +105,13 @@ int main(int argc, char *argv[])
 
     vector<string> unigramList;
     FOR (unigram, unigrams) {
+//        if (rand() % 10 == 0)
         unigramList.push_back(unigram->first);
     }
+
+    unigramList.clear();unigramList.push_back("and");unigramList.push_back("the");unigramList.push_back("good");
    
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(dynamic, 1000)
     for (int i = 0; i < unigramList.size(); ++ i) {
         const string &key = unigramList[i];
         if (!word2vec.count(key)) {
@@ -116,7 +119,7 @@ int main(int argc, char *argv[])
             continue;
         }
         //cerr << key << endl;
-        priority_queue < pair<double, double> > heap;
+        priority_queue < pair<double, string> > heap;
         const vector<double> &v = word2vec[key];
         double maxi = 0;
         FOR (phrase, phrases) {
@@ -136,7 +139,7 @@ int main(int argc, char *argv[])
                 }
                 maxi = max(maxi, dot);
                 if (heap.size() == 0 || dot > -heap.top().first) {
-                    heap.push(make_pair(-dot, -phrase->second));
+                    heap.push(make_pair(-dot, phrase->first));
                     if (heap.size() > K) {
                         heap.pop();
                     }
@@ -147,16 +150,21 @@ int main(int argc, char *argv[])
         double sum_weight = 0;
         while (heap.size() > 0) {
             double similarity = -heap.top().first;
-            double score = -heap.top().second;
-            
+            string phrase = heap.top().second;
+            double score = phrases[phrase];
+            cerr << "\t" << phrase << " " << similarity << endl;
             similarity /= maxi;
+
+            cerr << "\t" << similarity << " " << maxi << " " << score << endl;
+
             sum_weight += similarity;
-            sum = similarity * score;
+            sum += similarity * score;
             
             heap.pop();
         }
+        sum_weight = 3;
         unigrams[key] = sum / sum_weight;
-        //cerr << key << " " << sum / sum_weight;
+        cerr << key << " " << sum / sum_weight;
     }
 
     vector<pair<double, string>> order;
