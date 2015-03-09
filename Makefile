@@ -3,7 +3,7 @@ export CC  = gcc
 export CXX = g++
 export CFLAGS = -std=c++11 -Wall -O3 -msse2  -fopenmp  -I..
 
-BIN = ./bin/from_raw_to_binary ./bin/from_raw_to_binary_text ./bin/feature_extraction ./bin/predict_quality ./bin/adjust_probability ./bin/recompute_features ./bin/prune_and_combine ./bin/build_model ./bin/qualify_unigrams
+BIN = ./bin/from_raw_to_binary ./bin/from_raw_to_binary_text ./bin/feature_extraction ./bin/predict_quality ./bin/adjust_probability ./bin/recompute_features ./bin/prune_and_combine ./bin/build_model ./bin/qualify_unigrams ./bin/segphrase_parser
 .PHONY: clean all
 
 all: ./bin $(BIN)
@@ -17,6 +17,7 @@ all: ./bin $(BIN)
 ./bin/prune_and_combine: ./src/postprocessing/prune_and_combine.cpp ./src/utils/helper.h
 ./bin/build_model: ./src/postprocessing/build_model.cpp ./src/utils/helper.h
 ./bin/qualify_unigrams: ./src/postprocessing/qualify_unigrams.cpp ./src/utils/helper.h
+./bin/segphrase_parser: ./src/online_query/segphrase_parser.cpp ./src/utils/helper.h ./src/online_query/segphrase_parser.h
 
 ./bin:
 	mkdir bin
