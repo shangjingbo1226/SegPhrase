@@ -50,11 +50,12 @@ void loadVector(string filename)
         }
         vocab[b * max_w + a] = 0;
         for (a = 0; a < size; a++) fread(&M[a + b * size], sizeof(float), 1, f);
+        /*
         len = 0;
         for (a = 0; a < size; a++) len += M[a + b * size] * M[a + b * size];
         len = sqrt(len);
         for (a = 0; a < size; a++) M[a + b * size] /= len;
-        
+        */
         string word = &vocab[b * max_w];
         vector<double> vec(D, 0);
         double norm = 0;
