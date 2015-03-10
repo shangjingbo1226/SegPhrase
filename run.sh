@@ -2,13 +2,13 @@
 
 export PYTHON=python
 
-RAW_TEXT=data/DBLP.10K.txt
+RAW_TEXT=../DBLPLexiconCreation/data/DBLP.txt
 AUTO_LABEL=1
 DATA_LABEL=data/DBLP.label.auto
-KNOWLEDGE_BASE=data/knowledge_base.txt
+KNOWLEDGE_BASE=data/wiki_labels_quality.txt
 
 STOPWORD_LIST=data/stopwords.txt
-SUPPORT_THRESHOLD=10
+SUPPORT_THRESHOLD=30
 
 OMP_NUM_THREADS=10
 DISCARD_RATIO=0.05
