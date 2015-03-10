@@ -195,6 +195,7 @@ int main(int argc, char *argv[])
     }
     
     unordered_map<string, vector<pair<string, double>>> neighbors;
+    vector<vector<pair<string, double>>> nns(wordList.size(), vector<pair<string, double>>(K, make_pair("", 0)));
     
     bool buffered = false;
     if (true) {
@@ -213,16 +214,19 @@ int main(int argc, char *argv[])
                 }
             }
             fclose(in);
+            
+            for (size_t i = 0; i < wordList.size(); ++ i) {
+                nns[i] = neighbors[wordList[i]];
+            }
         }
     }
-    
     for (int iter = 0; iter < 10; ++ iter) {
         cerr << "iter " << iter << endl;
         vector<double> newScores(wordList.size(), 0);
         #pragma omp parallel for schedule(dynamic, 1000)
         for (size_t i = 0; i < wordList.size(); ++ i) {
             const string &wi = wordList[i];
-            if (iter == 0 && !neighbors.count(wi)) {
+            if (iter == 0 && neighbors.size() == 0) {
                 const vector<double> &v = word2vec[wi];
                 priority_queue<pair<double, string>> heap;
                 double maxi = 0;
@@ -250,17 +254,18 @@ int main(int argc, char *argv[])
                     }
                 }
                 
+                int ptr = 0;
                 while (heap.size() > 0) {
                     double similarity = -heap.top().first;
                     string word = heap.top().second;
                     heap.pop();
                     similarity /= maxi;
-                    neighbors[wi].push_back(make_pair(word, similarity));
+                    nns[i][ptr ++] = make_pair(word, similarity);
                 }
             }
             
             double sum = 0, sum_weight = 0;
-            FOR (neighbor, neighbors[wi]) {
+            FOR (neighbor, nns[i]) {
                 const string &wj = neighbor->first;
                 const double &similarity = neighbor->second;
                 double score = word[wj];
@@ -271,6 +276,11 @@ int main(int argc, char *argv[])
         }
         for (size_t i = 0; i < wordList.size(); ++ i) {
             word[wordList[i]] = newScores[i];
+        }
+        if (iter == 0) {
+            for (size_t i = 0; i < wordList.size(); ++ i) {
+                neighbors[wordList[i]] = nns[i];
+            }
         }
     }
     
