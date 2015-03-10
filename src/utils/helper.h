@@ -20,6 +20,23 @@ using namespace std;
 
 const double EPS = 1e-8;
 
+/*! \brief return a real numer uniform in (0,1) */
+inline double next_double2(){
+    return (static_cast<double>( rand() ) + 1.0 ) / (static_cast<double>(RAND_MAX) + 2.0);
+}
+
+/*! \brief return  x~N(0,1) */
+inline double sample_normal(){
+	double x,y,s;
+	do{
+		x = 2 * next_double2() - 1.0;
+		y = 2 * next_double2() - 1.0;
+		s = x*x + y*y;
+	}while( s >= 1.0 || s == 0.0 );
+	
+	return x * sqrt( -2.0 * log(s) / s ) ;
+}
+
 bool myAssert(bool flg, string msg)
 {
 	if (!flg) {
