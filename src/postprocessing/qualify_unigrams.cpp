@@ -2,6 +2,8 @@
 #include <queue>
 using namespace std;
 
+bool PROJECT = false;
+
 const int D = 30;
 const int K = 3;
 const long long max_size = 2000;         // max length of strings
@@ -57,15 +59,24 @@ void loadVector(string filename)
         for (a = 0; a < size; a++) M[a + b * size] /= len;
         */
         string word = &vocab[b * max_w];
-        vector<double> vec(D, 0);
         double norm = 0;
-        for (int d = 0; d < D; ++ d) {
-            double dot = 0;
-            for (a = 0; a < size; a ++) {
-                dot += M[a + b * size] * axis[d][a];
+        vector<double> vec;
+        if (PROJECT) {
+            vec.resize(D, 0);
+            for (int d = 0; d < D; ++ d) {
+                double dot = 0;
+                for (a = 0; a < size; a ++) {
+                    dot += M[a + b * size] * axis[d][a];
+                }
+                vec[d] = dot;
+                norm += dot * dot;
             }
-            vec[d] = dot;
-            norm += dot * dot;
+        } else {
+            vec.resize(size, 0);
+            for (a = 0; a < size; a ++) {
+                vec[a] = M[a + b * size];
+                norm += vec[a] * vec[a];
+            }
         }
         norm = sqrt(norm);
         for (int d = 0; d < D; ++ d) {
@@ -112,9 +123,15 @@ void loadPatterns(string folder)
 
 int main(int argc, char *argv[])
 {
-    if (argc != 4) {
-        printf("[usage] <vector.bin> <length*.csv folder path> <output: unigram-rank>\n");
+    if (argc != 5) {
+        printf("[usage] <vector.bin> <length*.csv folder path> <output: unigram-rank> <0/1 project or not>\n");
         return 0;
+    }
+    
+    if (strcmp(argv[4], "1")) {
+        PROJECT = false;
+    } else {
+        PROJECT = true;
     }
     
     loadVector(argv[1]);
