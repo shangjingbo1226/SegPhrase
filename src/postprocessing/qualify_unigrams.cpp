@@ -79,7 +79,7 @@ void loadVector(string filename)
             }
         }
         norm = sqrt(norm);
-        for (int d = 0; d < D; ++ d) {
+        for (size_t d = 0; d < vec.size(); ++ d) {
             vec[d] /= norm;
         }
         word2vec[word] = vec;
