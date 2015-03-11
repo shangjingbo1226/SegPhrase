@@ -145,6 +145,50 @@ int main(int argc, char *argv[])
     FOR (unigram, unigrams) {
         unigramList.push_back(unigram->first);
     }
+    
+    vector<string> wordList;
+    unordered_map<string, double> word;
+    FOR (unigram, unigrams) {
+        word[unigram->first] = unigram->second;
+        if (word2vec.count(unigram->first)) {
+            wordList.push_back(unigram->first);
+        }
+    }
+    FOR (phrase, phrases) {
+        word[phrase->first] = phrase->second;
+        if (word2vec.count(phrase->first)) {
+            wordList.push_back(phrase->first);
+        }
+    }
+    
+    unordered_map<string, vector<pair<string, double>>> neighbors;
+    vector<vector<pair<string, double>>> nns(wordList.size(), vector<pair<string, double>>(K, make_pair("", 0)));
+    
+    bool buffered = false;
+    if (true) {
+        FILE* in = tryOpen("results/neighbors.buff.txt", "r");
+        if (in != NULL) {
+            cerr << "neighbor from buffer" << endl;
+            buffered = true;
+            while (getLine(in)) {
+                vector<string> tokens = splitBy(line, '\t');
+                string w = tokens[0];
+                for (int i = 1; i + 1 < tokens.size(); i += 2) {
+                    string neighbor = tokens[i];
+                    myAssert(word.count(neighbor), "wrong neighbor!! " + neighbor + "\n" + line);
+                    double similarity;
+                    fromString(tokens[i + 1], similarity);
+                    neighbors[w].push_back(make_pair(neighbor, similarity));
+                }
+            }
+            fclose(in);
+            cerr << neighbors.size() << " loaded, " << wordList.size() << " words in total" << endl;
+            
+            for (size_t i = 0; i < wordList.size(); ++ i) {
+                nns[i] = neighbors[wordList[i]];
+            }
+        }
+    }
 
     #pragma omp parallel for schedule(dynamic, 1000)
     for (int i = 0; i < unigramList.size(); ++ i) {
@@ -197,48 +241,6 @@ int main(int argc, char *argv[])
     }
     cerr << "unigram initialized" << endl;
     
-    vector<string> wordList;
-    unordered_map<string, double> word;
-    FOR (unigram, unigrams) {
-        word[unigram->first] = unigram->second;
-        if (word2vec.count(unigram->first)) {
-            wordList.push_back(unigram->first);
-        }
-    }
-    FOR (phrase, phrases) {
-        word[phrase->first] = phrase->second;
-        if (word2vec.count(phrase->first)) {
-            wordList.push_back(phrase->first);
-        }
-    }
-    
-    unordered_map<string, vector<pair<string, double>>> neighbors;
-    vector<vector<pair<string, double>>> nns(wordList.size(), vector<pair<string, double>>(K, make_pair("", 0)));
-    
-    bool buffered = false;
-    if (true) {
-        FILE* in = tryOpen("results/neighbors.buff.txt", "r");
-        if (in != NULL) {
-            cerr << "neighbor from buffer" << endl;
-            buffered = true;
-            while (getLine(in)) {
-                vector<string> tokens = splitBy(line, '\t');
-                string word = tokens[0];
-                for (int i = 1; i + 1 < tokens.size(); ++ i) {
-                    string neighbor = tokens[i];
-                    double similarity;
-                    fromString(tokens[i + 1], similarity);
-                    neighbors[word].push_back(make_pair(neighbor, similarity));
-                }
-            }
-            fclose(in);
-            cerr << neighbors.size() << " loaded, " << wordList.size() << " words in total" << endl;
-            
-            for (size_t i = 0; i < wordList.size(); ++ i) {
-                nns[i] = neighbors[wordList[i]];
-            }
-        }
-    }
     for (int iter = 0; iter < 10; ++ iter) {
         cerr << "iter " << iter << endl;
         vector<double> newScores(wordList.size(), 0);
