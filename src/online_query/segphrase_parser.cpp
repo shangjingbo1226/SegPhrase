@@ -1,5 +1,7 @@
 #include "segphrase_parser.h"
 
+const string ENDINGS = ".!?,;:[]";
+
 string sep = "[]";
 
 void printVector(vector<string> a) {
@@ -57,8 +59,8 @@ void loadRankList(string filename, int topN)
 int main(int argc, char* argv[])
 {
     int topN;
-    if (argc != 5 || sscanf(argv[3], "%d", &topN) != 1) {
-        cerr << "[usage] <model-file> <rank-list> <top-n> <separator, _ or []>" << endl;
+    if (argc != 7 || sscanf(argv[3], "%d", &topN) != 1) {
+        cerr << "[usage] <model-file> <rank-list> <top-n> <separator, _ or []> <corpus_in> <segmented_out>" << endl;
         return -1;
     }
     
@@ -71,13 +73,77 @@ int main(int argc, char* argv[])
     loadRankList(argv[2], topN);
     parser->setDict(dict);
     
-    vector<string> segments = parser->segment("data mining is an area");
-    printVector(segments);
+    FILE* in = tryOpen(argv[5], "r");
+    FILE* out = tryOpen(argv[6], "w");
+    vector<string> sentences;
+	for (;getLine(in);) {
+		string sentence = "";
+		for (int i = 0; line[i]; ++ i) {
+			char ch = line[i];
+			if (ENDINGS.find(ch) != -1) {
+				if (sentence.size() > 0) {
+					sentences.push_back(sentence);
+				}
+				sentence = "";
+			} else {
+				sentence += ch;
+			}
+		}
+		if (sentence.size() > 0) {
+			sentences.push_back(sentence);
+		}
+		
+		string corpus = "";
+		FOR (sentence, sentences) {
+    		string origin = *sentence;
+		    string text = *sentence;
+		    for (size_t i = 0; i < text.size(); ++ i) {
+		        if (isalpha(text[i])) {
+		            text[i] = tolower(text[i]);
+		        } else if (text[i] != '\'') {
+		            text[i] = ' ';
+		        }
+		    }
+		    vector<string> segments = parser->segment(text);
+		    size_t last = 0;
+		    string answer = "";
+		    for (size_t i = 0; i < segments.size(); ++ i) {
+		        size_t st = last;
+		        while (text[st] != segments[i][0]) {
+		            ++ st;
+		        }
+		        size_t ed = st;
+		        for (size_t j = 0; j < segments[i].size(); ++ j) {
+		            while (text[ed] != segments[i][j]) {
+		                ++ ed;
+		            }
+		            ++ ed;
+		        }
+		        
+		        if (st > 0 && origin[st - 1] == '"' && ed < origin.size() && origin[ed] == '"') {
+		            -- st;
+		            ++ ed;
+		        }
+		        
+		        for (size_t j = last; j < st; ++ j) {
+		            answer += origin[j];
+		        }
+		        answer += "[";
+		        for (size_t j = st; j < ed; ++ j) {
+		            answer += origin[j];
+		        }
+		        answer += "]";
+		        
+		        last = ed;
+		    }
+		    if (corpus != "") {
+		        corpus += "$";
+		    }
+		    corpus += answer;
+		}
+		fprintf(out, "%s\n", corpus.c_str());
+	}
     
-    while (getLine(stdin)) {
-        segments = parser->segment(line);
-        printVector(segments);
-    }    
     cerr << "[done]" << endl;
     return 0;
 }
