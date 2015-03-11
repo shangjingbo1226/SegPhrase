@@ -175,9 +175,6 @@ int main(int argc, char *argv[])
                 string w = tokens[0];
                 for (int i = 1; i + 1 < tokens.size(); i += 2) {
                     string neighbor = tokens[i];
-                    if (!word.count(neighbor)) {
-                        continue;
-                    }
                     myAssert(word.count(neighbor), "wrong neighbor!! " + neighbor + "\n" + line);
                     double similarity;
                     fromString(tokens[i + 1], similarity);
@@ -213,12 +210,12 @@ int main(int argc, char *argv[])
                     dot += vp[i] * v[i];
                     sum1 -= vp[i] * vp[i];
                     sum2 -= v[i] * v[i];
-                    if (heap.size() && -heap.top().first >= dot + sqrt(sum1 * sum2)) {
+                    if (heap.size() == K && -heap.top().first >= dot + sqrt(sum1 * sum2)) {
                         break;
                     }
                 }
                 maxi = max(maxi, dot);
-                if (heap.size() == 0 || dot > -heap.top().first) {
+                if (heap.size() < K || dot > -heap.top().first) {
                     heap.push(make_pair(-dot, phrase->first));
                     if (heap.size() > K) {
                         heap.pop();
@@ -264,12 +261,12 @@ int main(int argc, char *argv[])
                             dot += vp[d] * v[d];
                             sum1 -= vp[d] * vp[d];
                             sum2 -= v[d] * v[d];
-                            if (heap.size() && -heap.top().first >= dot + sqrt(sum1 * sum2)) {
+                            if (heap.size() == K && -heap.top().first >= dot + sqrt(sum1 * sum2)) {
                                 break;
                             }
                         }
                         maxi = max(maxi, dot);
-                        if (heap.size() == 0 || dot > -heap.top().first) {
+                        if (heap.size() < K || dot > -heap.top().first) {
                             heap.push(make_pair(-dot, wj));
                             if (heap.size() > K) {
                                 heap.pop();
@@ -277,6 +274,8 @@ int main(int argc, char *argv[])
                         }
                     }
                 }
+                
+                myAssert(heap.size() == K, "too less neighbors");
                 
                 int ptr = 0;
                 while (heap.size() > 0) {
