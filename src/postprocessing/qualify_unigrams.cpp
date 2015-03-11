@@ -123,8 +123,9 @@ void loadPatterns(string folder)
 
 int main(int argc, char *argv[])
 {
-    if (argc != 5) {
-        printf("[usage] <vector.bin> <length*.csv folder path> <output: unigram-rank> <0/1 project or not>\n");
+    double alpha = 0;
+    if (argc != 6 || sscanf(argv[5], "%lf", &alpha) != 1 || alpha < 0 || alpha > 1) {
+        printf("[usage] <vector.bin> <length*.csv folder path> <output: unigram-rank> <0/1 project or not> <alpha: ratio for keep the previous value>\n");
         return 0;
     }
     
@@ -292,7 +293,7 @@ int main(int argc, char *argv[])
             newScores[i] = sum / sum_weight;
         }
         for (size_t i = 0; i < wordList.size(); ++ i) {
-            word[wordList[i]] = newScores[i];
+            word[wordList[i]] = word[wordList[i]] * alpha + newScores[i] * (1 - alpha);
         }
         if (iter == 0) {
             for (size_t i = 0; i < wordList.size(); ++ i) {
