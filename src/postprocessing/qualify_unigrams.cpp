@@ -232,6 +232,7 @@ int main(int argc, char *argv[])
                 }
             }
             fclose(in);
+            cerr << neighbors.size() << " loaded, " << wordList.size() << " words in total" << endl;
             
             for (size_t i = 0; i < wordList.size(); ++ i) {
                 nns[i] = neighbors[wordList[i]];
