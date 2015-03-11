@@ -84,8 +84,14 @@ private:
     }
 
 public:
-    SegPhraseParser(string modelFilename, int topK = -1) {
+    SegPhraseParser(string modelFilename, int topK = 0) {
         loadModel(modelFilename, topK);
+    }
+    
+    unordered_set<string> dict;
+    
+    void setDict(const unordered_set<string> &x) {
+        dict = x;
     }
     
     vector<string> segment(const string &sentence) {
@@ -108,7 +114,7 @@ public:
     				token += " ";
     				token += tokens[j];
     			}
-    			if (prob.count(token)) {
+    			if (prob.count(token) && (dict.size() == 0 || dict.count(token))) {
     				double p = prob[token];
     				if (f[i] + p > f[j + 1]) {
     					f[j + 1] = f[i] + p;
