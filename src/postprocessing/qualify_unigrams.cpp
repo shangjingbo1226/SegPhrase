@@ -175,6 +175,9 @@ int main(int argc, char *argv[])
                 string w = tokens[0];
                 for (int i = 1; i + 1 < tokens.size(); i += 2) {
                     string neighbor = tokens[i];
+                    if (!word.count(neighbor)) {
+                        continue;
+                    }
                     myAssert(word.count(neighbor), "wrong neighbor!! " + neighbor + "\n" + line);
                     double similarity;
                     fromString(tokens[i + 1], similarity);
