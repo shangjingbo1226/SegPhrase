@@ -94,7 +94,7 @@ public:
         dict = x;
     }
     
-    vector<string> segment(const string &sentence) {
+    vector<pair<string, bool>> segment(const string &sentence) {
         vector<string> tokens = splitBy(sentence, ' ');
         
     	vector<double> f(tokens.size() + 1, -INF);
@@ -138,7 +138,7 @@ public:
     	if (true) {
     	    // get the segmentation plan
     		int i = (int)tokens.size();
-            vector<string> segments;
+            vector<pair<string,bool>> segments;
     		while (i > 0) {
     			int j = pre[i];
     			string token = "";
@@ -149,7 +149,7 @@ public:
     				token += tokens[k];
     			}
     			i = j;
-                segments.push_back(token);
+                segments.push_back(make_pair(token, dict.count(token)));
     		}
     		reverse(segments.begin(), segments.end());
     		return segments;

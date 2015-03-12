@@ -104,35 +104,34 @@ int main(int argc, char* argv[])
 		            text[i] = ' ';
 		        }
 		    }
-		    vector<string> segments = parser->segment(text);
+		    vector<pair<string, bool>> segments = parser->segment(text);
 		    size_t last = 0;
 		    string answer = "";
 		    for (size_t i = 0; i < segments.size(); ++ i) {
 		        size_t st = last;
-		        while (text[st] != segments[i][0]) {
+		        while (text[st] != segments[i].first[0]) {
 		            ++ st;
 		        }
 		        size_t ed = st;
-		        for (size_t j = 0; j < segments[i].size(); ++ j) {
-		            while (text[ed] != segments[i][j]) {
+		        for (size_t j = 0; j < segments[i].first.size(); ++ j) {
+		            while (text[ed] != segments[i].first[j]) {
 		                ++ ed;
 		            }
-		            ++ ed;
-		        }
-		        
-		        if (st > 0 && origin[st - 1] == '"' && ed < origin.size() && origin[ed] == '"') {
-		            -- st;
 		            ++ ed;
 		        }
 		        
 		        for (size_t j = last; j < st; ++ j) {
 		            answer += origin[j];
 		        }
-		        answer += "[";
+		        if (segments[i].second) {
+    		        answer += "[";
+		        }
 		        for (size_t j = st; j < ed; ++ j) {
 		            answer += origin[j];
 		        }
-		        answer += "]";
+		        if (segments[i].second) {
+    		        answer += "]";
+		        }
 		        
 		        last = ed;
 		    }
