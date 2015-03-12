@@ -2,7 +2,8 @@
 
 export PYTHON=python
 
-RAW_TEXT=../DBLPLexiconCreation/data/DBLP.txt
+#RAW_TEXT=../DBLPLexiconCreation/data/DBLP.txt
+RAW_TEXT=data/DBLP.10K.txt
 AUTO_LABEL=1
 DATA_LABEL=data/DBLP.label.auto
 KNOWLEDGE_BASE=data/wiki_labels_quality.txt
@@ -14,7 +15,7 @@ OMP_NUM_THREADS=10
 DISCARD_RATIO=0.05
 MAX_ITERATION=5
 
-ALPHA=0.5
+ALPHA=0.85
 
 SLIDING_WINDOW=10
 SLIDING_THRES=0.5
@@ -72,5 +73,6 @@ cd word2vec_tool
 make
 cd ..
 ./word2vec_tool/word2vec -train tmp/normalized.txt -output ./results/vectors.bin -cbow 2 -size 300 -window 6 -negative 25 -hs 0 -sample 1e-4 -threads 10 -binary 1 -iter  15
-./bin/qualify_unigrams results/vectors.bin results/1.iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/ results/unigrams.csv 0 ${ALPHA}
+time ./bin/generateNN results/vectors.bin results/1.iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/ 30 3 results/u2p_nn.txt results/w2w_nn.txt
+./bin/qualify_unigrams results/vectors.bin results/1.iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/ results/u2p_nn.txt results/w2w_nn.txt 0.85 results/unified.csv 
 
