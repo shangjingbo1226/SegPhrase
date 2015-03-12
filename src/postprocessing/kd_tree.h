@@ -153,7 +153,15 @@ public:
     
     vector<string> query(const Point &target, int k) const {
         priority_queue<pair<double, string>> heap;
-        query(1, 0, points.size(), 0, target, k, heap);
+        if (d <= 15) {
+            query(1, 0, points.size(), 0, target, k, heap);
+        } else {
+            for (int i = 0; i < points.size(); ++ i) {
+                if (points[i] != target) {
+                    update(points[i], target, k, heap);
+                }
+            }
+        }
         vector<string> ret;
         while (heap.size() > 0) {
             ret.push_back(heap.top().second);
