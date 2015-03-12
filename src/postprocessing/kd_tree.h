@@ -62,12 +62,15 @@ class KDTree
     int d;
     
     void build(int num, int l, int r, int pivot) {
+        myAssert(num < mini.size(), "error in tree node id!");
         if (pivot == d) {
             pivot = 0;
         }
+//cerr << num << " " << l << " " << r << endl;
         int mid = l + r >> 1;
         ::pivot = pivot;
-        nth_element(points.begin() + l, points.begin() + mid, points.begin() + r, byPivot);
+        sort(points.begin() + l, points.begin() + r, byPivot);
+        //nth_element(points.begin() + l, points.begin() + mid, points.begin() + r, byPivot);
         mini[num] = maxi[num] = points[mid];
         
         if (l < mid) {
@@ -136,8 +139,8 @@ class KDTree
     }
 public:
     KDTree(const vector<Point> &points) : points(points) {
-        maxi.resize(points.size() * 4);
-        mini.resize(points.size() * 4);
+        maxi.resize(points.size() * 8);
+        mini.resize(points.size() * 8);
         if (points.size() > 0) {
             d = points[0].size();
             build(1, 0, points.size(), 0);

@@ -182,6 +182,9 @@ int main(int argc, char *argv[])
     vector<vector<pair<string, double>>> u2p(unigramPoints.size(), vector<pair<string,double>>(K, make_pair("", 0.0)));
     #pragma omp parallel for schedule(dynamic, 1000)
     for (int i = 0; i < unigramPoints.size(); ++ i) {
+//        if (i % 1000 == 0) {
+//            cerr << i << " " << unigramPoints[i].name<< endl;
+//        }
         vector<string> sim = phraseTree.query(projUnigramPoints[i], K * 2);
         
         vector< pair<double, string> > order;
@@ -208,6 +211,7 @@ int main(int argc, char *argv[])
             u2p[i][j].second = order[j].first / maxi;
         }
     }
+    cerr << "u2p nn done" << endl;
     
     FILE* out = tryOpen(argv[5], "w");
     for (int i = 0; i < unigramPoints.size(); ++ i) {
@@ -218,6 +222,7 @@ int main(int argc, char *argv[])
         fprintf(out, "\n");
     }
     fclose(out);
+    cerr << "u2p output done" << endl;
     
     KDTree wordTree(projWordsPoints);
     vector<vector<pair<string, double>>> w2w(wordsPoints.size(), vector<pair<string,double>>(K, make_pair("", 0.0)));
@@ -249,6 +254,8 @@ int main(int argc, char *argv[])
             w2w[i][j].second = order[j].first / maxi;
         }
     }
+
+    cerr << "w2w nn done" << endl;
     
     out = tryOpen(argv[6], "w");
     for (int i = 0; i < wordsPoints.size(); ++ i) {
@@ -259,4 +266,5 @@ int main(int argc, char *argv[])
         fprintf(out, "\n");
     }
     fclose(out);
+    cerr << "w2w output done" << endl;
 }
