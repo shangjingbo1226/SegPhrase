@@ -89,24 +89,24 @@ class KDTree
         }
     }
     
-    double estimate(const Point &mini, const Point &maxi, const Point &target) const {
+    bool estimate(const Point &mini, const Point &maxi, const Point &target, double threshold) const {
         double s = 0;
-        for (int i = 0; i < d; ++ i) {
+        for (int i = 0; i < d && s + EPS < threshold; ++ i) {
             if (target[i] < mini[i]) {
                 s += sqr(target[i] - mini[i]);
             } else if (target[i] > maxi[i]) {
                 s += sqr(target[i] - maxi[i]);
             }
         }
-        return s;
+        return s + EPS < threshold;
     }
     
-    void update(const Point &a, const Point &b, int k, priority_queue<pair<double, string>> &heap) const {
+    void update(const Point &a, const Point &b, int k, priority_queue<pair<double, string>> &heap, double threshold) const {
         double s = 0;
-        for (int i = 0; i < d; ++ i) {
+        for (int i = 0; i < d && s + EPS < threshold; ++ i) {
             s += sqr(a[i] - b[i]);
         }
-        if (heap.size() < k || s < heap.top().first) {
+        if (s + EPS < threshold) {
             heap.push(make_pair(s, a.name));
             if (heap.size() > k) {
                 heap.pop();
@@ -115,7 +115,7 @@ class KDTree
     }
     
     void query(int num, int l, int r, int pivot, const Point &target, int k, priority_queue<pair<double, string>> &heap) const {
-        if (l >= r || heap.size() == k && estimate(mini[num], maxi[num], target) >= heap.top().first) {
+        if (l >= r || heap.size() == k && estimate(mini[num], maxi[num], target, heap.top().first)) {
             return;
         }
 
@@ -126,7 +126,7 @@ class KDTree
         ::pivot = pivot;
         
         if (target != points[mid]) {
-            update(points[mid], target, k, heap);
+            update(points[mid], target, k, heap, heap.size() == k ? heap.top().first : 1e100);
         }
 
         if (byPivot(target, points[mid])) {
@@ -158,7 +158,7 @@ public:
         } else {
             for (int i = 0; i < points.size(); ++ i) {
                 if (points[i] != target) {
-                    update(points[i], target, k, heap);
+                    update(points[i], target, k, heap, heap.size() == k ? heap.top().first : 1e100);
                 }
             }
         }
