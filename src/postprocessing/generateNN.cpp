@@ -139,26 +139,26 @@ int main(int argc, char *argv[])
     double sqrt3 = sqrt(3.0);
     for (int i = 0; i < D; ++ i) {
         for (int j = 0; j < dimension; ++ j) {
-            //axis[i][j] = sample_normal();
-            double roll = next_double2();
+            axis[i][j] = sample_normal();
+            /*double roll = next_double2();
             if (roll < 1.0 / 6) {
                 axis[i][j] = sqrt3;
             } else if (roll < 1.0 / 3) {
                 axis[i][j] = -sqrt3;
-            }
+            }*/
         }
     }
-/*    for (int j = 0; j < dimension; ++ j) {
+    for (int i = 0; i < D; ++ i) {
         double sum = 0;
-        for (int i = 0; i < D; ++ i) {
+        for (int j = 0; j < dimension; ++ j) {
             sum += sqr(axis[i][j]);
         }
         sum = sqrt(sum);
-        for (int i = 0; i < D; ++ i) {
+        for (int j = 0; j < dimension; ++ j) {
             axis[i][j] /= sum;
         }
     }
-*/
+
     vector<Point> unigramPoints, phrasesPoints, wordsPoints;
 
     FOR (unigram, unigrams) {
