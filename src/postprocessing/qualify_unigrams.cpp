@@ -115,8 +115,9 @@ void loadNN(string filename, unordered_map<string, vector<pair<string, double>>>
 int main(int argc, char *argv[])
 {
     double alpha = 0;
-    if (argc != 7 || sscanf(argv[5], "%lf", &alpha) != 1 || alpha < 0 || alpha > 1) {
-        printf("[usage] <vector.bin> <length*.csv folder path> <u2p-nn> <w2w-nn> <alpha: ratio for keep the previous value> <output: unified-rank>\n");
+    int maxIter;
+    if (argc != 8 || sscanf(argv[5], "%lf", &alpha) != 1 || alpha < 0 || alpha > 1 || sscanf(argv[7], "%d", &maxIter) != 1) {
+        printf("[usage] <vector.bin> <length*.csv folder path> <u2p-nn> <w2w-nn> <alpha: ratio for keep the previous value> <output: unified-rank> <max iterations>\n");
         return 0;
     }
     
@@ -161,8 +162,8 @@ int main(int argc, char *argv[])
     }
     cerr << "unigram initialized" << endl;
     
-    for (int iter = 0; iter < 10; ++ iter) {
-        cerr << "iter " << iter << endl;
+    for (int iter = 0; iter < maxIter; ++ iter) {
+        //cerr << "iter " << iter << endl;
         vector<double> newScores(wordList.size(), 0);
         #pragma omp parallel for schedule(dynamic, 1000)
         for (size_t i = 0; i < wordList.size(); ++ i) {
@@ -183,6 +184,11 @@ int main(int argc, char *argv[])
         for (size_t i = 0; i < wordList.size(); ++ i) {
             finalScoreMapping[wordList[i]] = finalScoreMapping[wordList[i]] * alpha + newScores[i] * (1 - alpha);
         }
+    }
+    cerr << maxIter << " iterations done" << endl;
+    
+    FOR (phrase, phrases) {
+        finalScoreMapping[phrase->first] = phrase->second;
     }
     
     vector<pair<double, string>> order;
