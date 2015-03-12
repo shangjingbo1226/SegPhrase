@@ -204,7 +204,7 @@ int main(int argc, char *argv[])
 //        if (i % 1000 == 0) {
 //            cerr << i << " " << unigramPoints[i].name<< endl;
 //        }
-        vector<string> sim = phraseTree.query(projUnigramPoints[i], K * 2);
+        vector<string> sim = phraseTree.query(projUnigramPoints[i], 100);
         
         vector< pair<double, string> > order;
         const vector<double> &u = unigramPoints[i].x;
@@ -247,7 +247,7 @@ int main(int argc, char *argv[])
     vector<vector<pair<string, double>>> w2w(wordsPoints.size(), vector<pair<string,double>>(K, make_pair("", 0.0)));
     #pragma omp parallel for schedule(dynamic, 1000)
     for (int i = 0; i < wordsPoints.size(); ++ i) {
-        vector<string> sim = wordTree.query(projWordsPoints[i], K * 2);
+        vector<string> sim = wordTree.query(projWordsPoints[i], 100);
         
         vector< pair<double, string> > order;
         const vector<double> &u = wordsPoints[i].x;
