@@ -136,12 +136,29 @@ int main(int argc, char *argv[])
     cerr << phrases.size() << endl;
     
     vector< vector<double> > axis(D, vector<double>(dimension, 0));
+    double sqrt3 = sqrt(3.0);
     for (int i = 0; i < D; ++ i) {
         for (int j = 0; j < dimension; ++ j) {
-            axis[i][j] = sample_normal();
+            //axis[i][j] = sample_normal();
+            double roll = next_double2();
+            if (roll < 1.0 / 6) {
+                axis[i][j] = sqrt3;
+            } else if (roll < 1.0 / 3) {
+                axis[i][j] = -sqrt3;
+            }
         }
     }
-    
+/*    for (int j = 0; j < dimension; ++ j) {
+        double sum = 0;
+        for (int i = 0; i < D; ++ i) {
+            sum += sqr(axis[i][j]);
+        }
+        sum = sqrt(sum);
+        for (int i = 0; i < D; ++ i) {
+            axis[i][j] /= sum;
+        }
+    }
+*/
     vector<Point> unigramPoints, phrasesPoints, wordsPoints;
 
     FOR (unigram, unigrams) {
@@ -160,18 +177,20 @@ int main(int argc, char *argv[])
         }
     }
     
+    normalize(unigramPoints);
+    normalize(phrasesPoints);
+    normalize(wordsPoints);
+    
     vector<Point> projUnigramPoints, projPhrasesPoints, projWordsPoints;
     projUnigramPoints = project(unigramPoints, axis);
     projPhrasesPoints = project(phrasesPoints, axis);
     projWordsPoints = project(wordsPoints, axis);
     
-    normalize(projUnigramPoints);
+/*    normalize(projUnigramPoints);
     normalize(projPhrasesPoints);
-    normalize(projWordsPoints);
+    normalize(projWordsPoints);*/
     
-    normalize(unigramPoints);
-    normalize(phrasesPoints);
-    normalize(wordsPoints);
+    
     for (int i = 0; i < wordsPoints.size(); ++ i) {
         word2vec[wordsPoints[i].name] = wordsPoints[i].x;
     }
