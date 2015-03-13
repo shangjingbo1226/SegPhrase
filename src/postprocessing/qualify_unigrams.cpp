@@ -158,7 +158,7 @@ int main(int argc, char *argv[])
             sum += similarity * score;
         }
 //        sum_weight = 3;
-        unigrams[key] = sum / sum_weight;
+        finalScoreMapping[key] = unigrams[key] = sum / sum_weight;
     }
     cerr << "unigram initialized" << endl;
     
