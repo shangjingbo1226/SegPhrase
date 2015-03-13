@@ -112,14 +112,30 @@ void loadNN(string filename, unordered_map<string, vector<pair<string, double>>>
     fclose(in);
 }
 
+unordered_set<string> stopwords;
+
+void loadStopwords(string filename)
+{
+    FILE* in = tryOpen(filename, "r");
+    for (;getLine(in);) {
+        for (int i = 0; line[i]; ++ i) {
+            line[i] = tolower(line[i]);
+        }
+        stopwords.insert(line);
+    }
+    fclose(in);
+}
+
 int main(int argc, char *argv[])
 {
     double alpha = 0;
     int maxIter;
-    if (argc != 8 || sscanf(argv[5], "%lf", &alpha) != 1 || alpha < 0 || alpha > 1 || sscanf(argv[7], "%d", &maxIter) != 1) {
-        printf("[usage] <vector.bin> <length*.csv folder path> <u2p-nn> <w2w-nn> <alpha: ratio for keep the previous value> <output: unified-rank> <max iterations>\n");
+    if (argc != 9 || sscanf(argv[5], "%lf", &alpha) != 1 || alpha < 0 || alpha > 1 || sscanf(argv[7], "%d", &maxIter) != 1) {
+        printf("[usage] <vector.bin> <length*.csv folder path> <u2p-nn> <w2w-nn> <alpha: ratio for keep the previous value> <output: unified-rank> <max iterations> <stopwords.txt>\n");
         return 0;
     }
+    
+    loadStopwords(argv[8]);
     
     loadVector(argv[1]);
     loadPatterns(argv[2]);
@@ -145,6 +161,9 @@ int main(int argc, char *argv[])
     #pragma omp parallel for schedule(dynamic, 1000)
     for (int i = 0; i < unigramList.size(); ++ i) {
         const string &key = unigramList[i];
+        if (stopwords.count(key)) {
+            continue;
+        }
         myAssert(u2p.count(key), "missing key in u2p " + key);
         const vector<pair<string, double>> &neighbors = u2p[key];
         double sum = 0;
@@ -157,7 +176,7 @@ int main(int argc, char *argv[])
             sum_weight += similarity;
             sum += similarity * score;
         }
-//        sum_weight = 3;
+        sum_weight = 3;
         finalScoreMapping[key] = unigrams[key] = sum / sum_weight;
     }
     cerr << "unigram initialized" << endl;
@@ -168,6 +187,9 @@ int main(int argc, char *argv[])
         #pragma omp parallel for schedule(dynamic, 1000)
         for (size_t i = 0; i < wordList.size(); ++ i) {
             const string &key = wordList[i];
+            if (stopwords.count(key)) {
+                continue;
+            }
             myAssert(w2w.count(key), "missing key in w2w " + key);
             const vector<pair<string, double>> &neighbors = w2w[key];
             double sum = 0, sum_weight = 0;
