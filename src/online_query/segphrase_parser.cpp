@@ -75,14 +75,22 @@ int main(int argc, char* argv[])
     
     FILE* in = tryOpen(argv[5], "r");
     FILE* out = tryOpen(argv[6], "w");
-    vector<string> sentences;
+    
 	for (;getLine(in);) {
+		vector<string> sentences;
+	    vector<string> betweens;
+	    betweens.push_back("");
+
 		string sentence = "";
+		// if (line.size() == 0) continue;
 		for (int i = 0; line[i]; ++ i) {
 			char ch = line[i];
 			if (ENDINGS.find(ch) != -1) {
 				if (sentence.size() > 0) {
 					sentences.push_back(sentence);
+					betweens.push_back(string(1, ch));
+				} else {
+					betweens.back() += ch;
 				}
 				sentence = "";
 			} else {
@@ -93,7 +101,8 @@ int main(int argc, char* argv[])
 			sentences.push_back(sentence);
 		}
 		
-		string corpus = "";
+		string corpus = betweens[0];
+		int index = 1;
 		FOR (sentence, sentences) {
     		string origin = *sentence;
 		    string text = *sentence;
@@ -107,36 +116,41 @@ int main(int argc, char* argv[])
 		    vector<pair<string, bool>> segments = parser->segment(text);
 		    size_t last = 0;
 		    string answer = "";
-		    for (size_t i = 0; i < segments.size(); ++ i) {
-		        size_t st = last;
-		        while (text[st] != segments[i].first[0]) {
-		            ++ st;
-		        }
-		        size_t ed = st;
-		        for (size_t j = 0; j < segments[i].first.size(); ++ j) {
-		            while (text[ed] != segments[i].first[j]) {
-		                ++ ed;
-		            }
-		            ++ ed;
-		        }
-		        
-		        for (size_t j = last; j < st; ++ j) {
-		            answer += origin[j];
-		        }
-		        if (segments[i].second) {
-    		        answer += "[";
-		        }
-		        for (size_t j = st; j < ed; ++ j) {
-		            answer += origin[j];
-		        }
-		        if (segments[i].second) {
-    		        answer += "]";
-		        }
-		        
-		        last = ed;
-		    }
-		    if (corpus != "") {
-		        corpus += "$";
+		    if (segments.size() == 0) {
+		    	answer += origin;
+		    } else {
+			    for (size_t i = 0; i < segments.size(); ++ i) {
+			        size_t st = last;
+			        while (text[st] != segments[i].first[0]) {
+			            ++ st;
+			        }
+			        size_t ed = st;
+			        for (size_t j = 0; j < segments[i].first.size(); ++ j) {
+			            while (text[ed] != segments[i].first[j]) {
+			                ++ ed;
+			            }
+			            ++ ed;
+			        }
+			        
+			        for (size_t j = last; j < st; ++ j) {
+			            answer += origin[j];
+			        }
+			        if (segments[i].second) {
+	    		        answer += "[";
+			        }
+			        for (size_t j = st; j < ed; ++ j) {
+			            answer += origin[j];
+			        }
+			        if (segments[i].second) {
+	    		        answer += "]";
+			        }
+			        
+			        last = ed;
+			    }
+			}
+			if (index < betweens.size()) {
+		        answer += betweens[index];
+		        ++ index;
 		    }
 		    corpus += answer;
 		}

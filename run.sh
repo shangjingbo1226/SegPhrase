@@ -3,7 +3,7 @@
 export PYTHON=python
 
 #RAW_TEXT=../DBLPLexiconCreation/data/DBLP.txt
-RAW_TEXT=data/DBLP.10K.txt
+RAW_TEXT=data/all.txt
 AUTO_LABEL=1
 DATA_LABEL=data/DBLP.label.auto
 KNOWLEDGE_BASE=data/wiki_labels_quality.txt
@@ -72,7 +72,7 @@ normalize_text < results/1.iter${MAX_ITERATION}_discard${DISCARD_RATIO}/segmente
 cd word2vec_tool
 make
 cd ..
-./word2vec_tool/word2vec -train tmp/normalized.txt -output ./results/vectors.bin -cbow 2 -size 300 -window 6 -negative 25 -hs 0 -sample 1e-4 -threads 10 -binary 1 -iter  15
+./word2vec_tool/word2vec -train tmp/normalized.txt -output ./results/vectors.bin -cbow 2 -size 300 -window 6 -negative 25 -hs 0 -sample 1e-4 -threads ${OMP_NUM_THREADS} -binary 1 -iter 15
 time ./bin/generateNN results/vectors.bin results/1.iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/ 30 3 results/u2p_nn.txt results/w2w_nn.txt
-./bin/qualify_unigrams results/vectors.bin results/1.iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/ results/u2p_nn.txt results/w2w_nn.txt 0.85 results/unified.csv 100
+./bin/qualify_unigrams results/vectors.bin results/1.iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/ results/u2p_nn.txt results/w2w_nn.txt ${ALPHA} results/unified.csv 100 data/stop_words.txt
 

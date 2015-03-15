@@ -94,11 +94,11 @@ for bin in bins:
         labels.append(bin[0] + '\t1\n')
 npos = len(labels)
 # k-means
-kmeans = cluster.MiniBatchKMeans(n_clusters = min(npos * 2, len(matrixOther)), max_iter = 300, batch_size = 5000)
+kmeans = cluster.MiniBatchKMeans(n_clusters = min(npos * 5, len(matrixOther)), max_iter = 300, batch_size = 5000)
 kmeans.fit(matrixOther)
 labelsOther = kmeans.labels_
 bins = []
-for i in xrange(1000):
+for i in xrange(min(npos * 5, len(matrixOther))):
     bins.append([])
 
 for i in xrange(len(labelsOther)):
