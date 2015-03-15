@@ -1,6 +1,5 @@
 import re
 import sys
-from math import *
 
 def main(argv):
     if (len(argv) != 2):
