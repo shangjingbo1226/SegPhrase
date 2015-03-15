@@ -59,12 +59,11 @@ void loadRankList(string filename, int topN)
 int main(int argc, char* argv[])
 {
     int topN;
-    if (argc != 7 || sscanf(argv[3], "%d", &topN) != 1) {
-        cerr << "[usage] <model-file> <rank-list> <top-n> <separator, _ or []> <corpus_in> <segmented_out>" << endl;
+    if (argc != 6 || sscanf(argv[3], "%d", &topN) != 1) {
+        cerr << "[usage] <model-file> <rank-list> <top-n> <corpus_in> <segmented_out>" << endl;
         return -1;
     }
     
-    sep = argv[4];
     
     string model_path = (string)argv[1];
     SegPhraseParser* parser = new SegPhraseParser(model_path, 0);
@@ -73,8 +72,8 @@ int main(int argc, char* argv[])
     loadRankList(argv[2], topN);
     parser->setDict(dict);
     
-    FILE* in = tryOpen(argv[5], "r");
-    FILE* out = tryOpen(argv[6], "w");
+    FILE* in = tryOpen(argv[4], "r");
+    FILE* out = tryOpen(argv[5], "w");
     
 	for (;getLine(in);) {
 		vector<string> sentences;

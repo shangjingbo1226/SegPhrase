@@ -2,8 +2,7 @@
 
 export PYTHON=python
 
-#RAW_TEXT=../DBLPLexiconCreation/data/DBLP.txt
-RAW_TEXT=data/all.txt
+RAW_TEXT=data/DBLP.10K.txt
 AUTO_LABEL=1
 DATA_LABEL=data/DBLP.label.auto
 KNOWLEDGE_BASE=data/wiki_labels_quality.txt
