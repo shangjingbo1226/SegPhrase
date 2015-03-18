@@ -47,7 +47,7 @@ void normalize()
             sum[i] += sumList[j][i];
         }
     }
-    
+
 	#pragma omp parallel for schedule(static)
     for (size_t i = 0; i < allPhrases.size(); ++ i) {
         const string &phrase = allPhrases[i];
@@ -69,9 +69,9 @@ bool getPenalty(const string &filename, double penalty)
     for (int i = 0; i <= maxLen; ++ i) {
         pw[i] /= totalPw;
     }
-    
+
     normalize();
-    
+
     for (size_t i = 0; i < allPhrases.size(); ++ i) {
         const string &phrase = allPhrases[i];
         if (prob.count(phrase)) {
@@ -81,7 +81,7 @@ bool getPenalty(const string &filename, double penalty)
             pr[phrase] = pgood;
         }
     }
-    
+
     FILE* in = tryOpen(filename, "r");
     int total = 0, wrong =  0;
     for (;getLine(in);) {
@@ -141,7 +141,7 @@ string dumpResult(int round, const string &prefix, const vector<double> &pw, boo
     if (lastIter) {
         system(("mkdir " + (string)folder).c_str());
     }
-    
+
     FILE* out[maxLen];
     #pragma omp parallel for schedule(static)
     for (int i = 0; i < maxLen; ++ i) {
@@ -151,9 +151,9 @@ string dumpResult(int round, const string &prefix, const vector<double> &pw, boo
             out[i] = tryOpen(file, "w");
         }
     }
-    
+
     vector< pair<double, string> > orderList[nthreads][maxLen];
-    char outputString[nthreads][1000];
+    char outputString[nthreads][10000];
     #pragma omp parallel for schedule(dynamic, 1000)
     for (size_t i = 0; i < allPhrases.size(); ++ i) {
         const string &phrase = allPhrases[i];
@@ -161,7 +161,7 @@ string dumpResult(int round, const string &prefix, const vector<double> &pw, boo
             int parts = partsInPhrase[phrase];
             double &value = prob[phrase];
             double pgood = value * pw[parts - 1] * logistic[phrase];
-            
+
             int tid = omp_get_thread_num();
             if (lastIter) {
                 sprintf(outputString[tid], "%s,%.10f,%.10f,%.10f", phrase.c_str(), pgood, value * logistic[phrase], logistic[phrase]);
@@ -170,7 +170,7 @@ string dumpResult(int round, const string &prefix, const vector<double> &pw, boo
             value = pgood;
         }
     }
-    
+
     if (lastIter) {
         #pragma omp parallel for schedule(static)
         for (int i = 0; i < maxLen; ++ i) {
@@ -187,7 +187,7 @@ string dumpResult(int round, const string &prefix, const vector<double> &pw, boo
             fclose(out[i]);
         }
     }
-    
+
     return folder;
 }
 
@@ -203,16 +203,16 @@ void DP(int round, double penalty, bool needSegmentResult = false, bool onlyDump
     for (int i = 0; i <= maxLen; ++ i) {
         pw[i] /= totalPw;
     }
-    
+
     normalize();
-    
+
     string newpath = dumpResult(round, outputFile, pw, needSegmentResult || onlyDump);
 //    cerr << "    previous results dumped" << endl;
-    
+
     if (onlyDump) {
         return;
     }
-    
+
     // initialize
     makeLog(prob, allPhrases);
 	vector< vector<int> > occur(nthreads, vector<int>());
@@ -220,9 +220,9 @@ void DP(int round, double penalty, bool needSegmentResult = false, bool onlyDump
     for (int i = 0; i < nthreads; ++ i) {
         occur[i].resize(allPhrases.size(), 0);
     }
-    
+
 	vector< string > parsed(sentences.size(), "");
-    
+
     double energy = 0;
 	#pragma omp parallel for schedule(dynamic, 1000) reduction(+:energy)
     for (size_t sentenceID = 0; sentenceID < sentences.size(); ++ sentenceID) {
@@ -275,7 +275,7 @@ void DP(int round, double penalty, bool needSegmentResult = false, bool onlyDump
                 assert(phrase2id.count(token));
     			++ occur[tid][phrase2id[token]];
     			i = j;
-    			
+
                 if (needSegmentResult) {
                     for (size_t k = 0; k < token.size(); ++ k) {
                         if (token[k] == ' ') {
@@ -285,7 +285,7 @@ void DP(int round, double penalty, bool needSegmentResult = false, bool onlyDump
                     segments.push_back(token);
                 }
     		}
-            
+
             if (needSegmentResult) {
                 string &ret = parsed[sentenceID];
                 for (int _ = (int)segments.size() - 1; _ >= 0; -- _) {
@@ -303,9 +303,9 @@ void DP(int round, double penalty, bool needSegmentResult = false, bool onlyDump
             }
     	}
     }
-    
+
 //    cerr << "    energy = " << energy << endl;
-    
+
     vector<int> sum(allPhrases.size(), 0);
     #pragma omp parallel for schedule(static)
     for (size_t i = 0; i < allPhrases.size(); ++ i) {
@@ -314,7 +314,7 @@ void DP(int round, double penalty, bool needSegmentResult = false, bool onlyDump
             value += occur[tid][i];
         }
     }
-    
+
     prob.clear();
     for (size_t i = 0; i < allPhrases.size(); ++ i) {
         if (sum[i] > 0) {
@@ -322,7 +322,7 @@ void DP(int round, double penalty, bool needSegmentResult = false, bool onlyDump
         }
     }
 //    cerr << "    # candidate phrases = " << prob.size() << endl;
-    
+
     if (needSegmentResult) {
         finalSegmentation = "";
         int cnt = 0;
@@ -358,9 +358,9 @@ void loadPattern(const string &filename)
 		}
 	}
 	fclose(in);
-	
+
 //	cerr << "# Pattern = " << prob.size() << endl;
-	
+
 	FOR (iter, unigrams) {
 		logistic[iter->first] = 1.0;
 	}
@@ -377,7 +377,7 @@ void loadLogistic(const string &filename)
 		logistic[pattern] = pred;
 	}
 	fclose(in);
-	
+
 //	cerr << "# logistic = " << logistic.size() << endl;
 }
 
@@ -392,10 +392,10 @@ void loadSentences(const string &filename)
 		Binary::read(in, sentences[i]);
 	}
 //	cerr << "# Sentences Loaded = " << size << endl;
-	
+
 	Binary::read(in, size);
 	allUnigrams.resize(size);
-    
+
 	for (size_t i = 0; i < size; ++ i) {
 		Binary::read(in, allUnigrams[i]);
         unigram2id[allUnigrams[i]] = i;
@@ -403,20 +403,20 @@ void loadSentences(const string &filename)
 	}
 //	cerr << "# Unigrams Loaded = " << size << endl;
 	fclose(in);
-	
+
 	vector< vector<int> > unigramsList(nthreads, vector<int>(allUnigrams.size(), 0));
-	
+
 	#pragma omp parallel for schedule(dynamic, 1000)
 	for (size_t i = 0; i < sentences.size(); ++ i) {
 		vector<string> &tokens = sentencesTokens[i];
 		tokens = splitBy(sentences[i], ' ');
-		
+
 		int tid = omp_get_thread_num();
 		FOR (token, tokens) {
 			++ unigramsList[tid][unigram2id[*token]];
 		}
 	}
-	
+
     vector<int> sum(allUnigrams.size(), 0);
 	#pragma omp parallel for schedule(static)
 	for (size_t i = 0; i < allUnigrams.size(); ++ i) {
@@ -439,20 +439,20 @@ int main(int argc, char* argv[])
 		return -1;
 	}
     outputFile = argv[7];
-	
+
 	omp_set_num_threads(nthreads);
-	
+
 	loadSentences(argv[1]);
 	loadLogistic(argv[3]);
 	loadPattern(argv[4]);
 
 //    cerr << "# all phrase candidates = " << allPhrases.size() << endl;
-	
+
 	FOR (iter, unigrams) {
 		logistic[iter->first] = 1.0;
 		prob[iter->first] = iter->second;
 	}
-    
+
     maxLen = 0;
     vector<int> temp(allPhrases.size(), 0);
     #pragma omp parallel for schedule(dynamic, 1000) reduction(max:maxLen)
@@ -471,10 +471,10 @@ int main(int argc, char* argv[])
         partsInPhrase[phrase] = temp[i];
     }
     cerr << "max #tokens in phrase = " << maxLen << endl;
-    
+
     assert(!prob.count(""));
     assert(!logistic.count(""));
-	
+
 	// start adjust penalty, DP
 	const double EPS = 1e-6;
 	double lower = EPS, upper = 200;
@@ -485,20 +485,20 @@ int main(int argc, char* argv[])
 	prob = backup;
 	DP(0, upper, false, false);
 	unordered_map<string, double> small = prob;
-	
+
 	prob = backup;
 	FOR (iter, prob) {
         iter->second = (large[iter->first] + small[iter->first]) / 2.0;
 	}
 	backup = prob;
-	
+
 	for (int _ = 0; _ < 10; ++ _) {
 //	    cerr << "[lower, upper] = [" << lower << ", " << upper << "]" << endl;
         penalty = (lower + upper) / 2;
-        
+
         prob = backup;
         DP(-(_ + 1), penalty, false, false);
-        
+
 //        cerr << "penalty = "  << penalty << endl;
         if (getPenalty(argv[8], penalty)) {
             lower = penalty;
@@ -512,15 +512,15 @@ int main(int argc, char* argv[])
         fprintf(out, "%.10f\n", penalty);
         fclose(out);
     }
-	
+
 	prob = backup;
     for (int round = 1; round <= maxIter; ++ round) {
         DP(round, penalty, round == maxIter);
     }
     DP(maxIter + 1, penalty, false, true);
-    
+
     cerr << "adjust probability done." << endl;
-	
+
 	return 0;
 }
 
