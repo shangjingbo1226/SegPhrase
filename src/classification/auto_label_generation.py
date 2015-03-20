@@ -8,7 +8,7 @@ if len(sys.argv) != 5:
     sys.exit(-1)
 
 knowledge_base = sys.argv[1]
-knowledge_base_large = sys.argv[1]
+knowledge_base_large = sys.argv[2]
 feature_table = sys.argv[3]
 generated_label = sys.argv[4]
 
