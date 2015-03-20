@@ -6,6 +6,7 @@ RAW_TEXT=/srv/data/jialu/data/wiki/sampled_wiki_cleaned.txt
 AUTO_LABEL=1
 DATA_LABEL=data/wiki.label.auto
 KNOWLEDGE_BASE=data/wiki_labels_quality.txt
+KNOWLEDGE_BASE_LARGE=data/wiki_labels_all.txt
 
 STOPWORD_LIST=data/stopwords.txt
 SUPPORT_THRESHOLD=30
@@ -38,7 +39,7 @@ ${PYTHON} ./src/preprocessing/compute_idf.py -raw ${RAW_TEXT} -o results/wordIDF
 
 if [ ${AUTO_LABEL} -eq 1 ];
 then
-    ${PYTHON} src/classification/auto_label_generation.py ${KNOWLEDGE_BASE} results/feature_table_0.csv ${DATA_LABEL}
+    ${PYTHON} src/classification/auto_label_generation.py ${KNOWLEDGE_BASE} ${KNOWLEDGE_BASE_LARGE} results/feature_table_0.csv ${DATA_LABEL}
 fi
 
 # classifier training

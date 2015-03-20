@@ -3,13 +3,14 @@ from random import shuffle
 from math import sqrt
 from sklearn import cluster
 
-if len(sys.argv) != 4:
-    print '[usage] <knowledge base> <feature table> <generated label>'
+if len(sys.argv) != 5:
+    print '[usage] <knowledge base small> <knowledge base large> <feature table> <generated label>'
     sys.exit(-1)
 
 knowledge_base = sys.argv[1]
-feature_table = sys.argv[2]
-generated_label = sys.argv[3]
+knowledge_base_large = sys.argv[1]
+feature_table = sys.argv[3]
+generated_label = sys.argv[4]
 
 def normalizeMatrix(matrix):
     for i in xrange(dimension):
@@ -44,6 +45,11 @@ for line in open(knowledge_base, 'r'):
     word = line.strip()
     word = normalize(word)
     groundtruth[word] = True
+kb_phrases_all= set()
+for line in open(knowledge_base_large, 'r'):
+    word = line.strip()
+    word = normalize(word)
+    kb_phrases_all.add(word) 
     
 # loading
 dimension = 0
@@ -107,7 +113,10 @@ for i in xrange(len(labelsOther)):
 for bin in bins:
     shuffle(bin)
     if len(bin) > 0:
-        labels.append(bin[0] + '\t0\n')
+        for i in xrange(len(bin)):
+            if bin[i] not in kb_phrases_all:
+                labels.append(bin[i] + '\t0\n')
+                break
         
 out = open(generated_label, 'w')
 out.write(''.join(labels))
