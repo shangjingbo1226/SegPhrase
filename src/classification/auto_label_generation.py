@@ -43,7 +43,7 @@ def normalize(word):
 groundtruth = {}
 for line in open(knowledge_base, 'r'):
     word = line.strip()
-    word = normalize(word)
+    #word = normalize(word)
     groundtruth[word] = True
 kb_phrases_all= set()
 for line in open(knowledge_base_large, 'r'):
