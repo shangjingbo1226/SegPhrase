@@ -59,8 +59,8 @@ void loadRankList(string filename, int topN)
 int main(int argc, char* argv[])
 {
     int topN;
-    if (argc != 6 || sscanf(argv[3], "%d", &topN) != 1) {
-        cerr << "[usage] <model-file> <rank-list> <top-n> <corpus_in> <segmented_out>" << endl;
+    if (argc != 7 || sscanf(argv[3], "%d", &topN) != 1) {
+        cerr << "[usage] <model-file> <rank-list> <top-n> <corpus_in> <segmented_out> <clean_mode>" << endl;
         return -1;
     }
     
@@ -75,86 +75,104 @@ int main(int argc, char* argv[])
     FILE* in = tryOpen(argv[4], "r");
     FILE* out = tryOpen(argv[5], "w");
     
-	for (;getLine(in);) {
-		vector<string> sentences;
-	    vector<string> betweens;
-	    betweens.push_back("");
+    bool clean_mode = (strcmp(argv[6], "0") != 0);
+    for (;getLine(in);) {
+        vector<string> sentences;
+        vector<string> betweens;
+        betweens.push_back("");
 
-		string sentence = "";
-		// if (line.size() == 0) continue;
-		for (int i = 0; line[i]; ++ i) {
-			char ch = line[i];
-			if (ENDINGS.find(ch) != -1) {
-				if (sentence.size() > 0) {
-					sentences.push_back(sentence);
-					betweens.push_back(string(1, ch));
-				} else {
-					betweens.back() += ch;
-				}
-				sentence = "";
-			} else {
-				sentence += ch;
-			}
-		}
-		if (sentence.size() > 0) {
-			sentences.push_back(sentence);
-		}
-		
-		string corpus = betweens[0];
-		int index = 1;
-		FOR (sentence, sentences) {
-    		string origin = *sentence;
-		    string text = *sentence;
-		    for (size_t i = 0; i < text.size(); ++ i) {
-		        if (isalpha(text[i])) {
-		            text[i] = tolower(text[i]);
-		        } else if (text[i] != '\'') {
-		            text[i] = ' ';
-		        }
-		    }
-		    vector<pair<string, bool>> segments = parser->segment(text);
-		    size_t last = 0;
-		    string answer = "";
-		    if (segments.size() == 0) {
-		    	answer += origin;
-		    } else {
-			    for (size_t i = 0; i < segments.size(); ++ i) {
-			        size_t st = last;
-			        while (text[st] != segments[i].first[0]) {
-			            ++ st;
-			        }
-			        size_t ed = st;
-			        for (size_t j = 0; j < segments[i].first.size(); ++ j) {
-			            while (text[ed] != segments[i].first[j]) {
-			                ++ ed;
-			            }
-			            ++ ed;
-			        }
-			        
-			        for (size_t j = last; j < st; ++ j) {
-			            answer += origin[j];
-			        }
-			        if (segments[i].second) {
-	    		        answer += "[";
-			        }
-			        for (size_t j = st; j < ed; ++ j) {
-			            answer += origin[j];
-			        }
-			        if (segments[i].second) {
-	    		        answer += "]";
-			        }
-			        
-			        last = ed;
-			    }
-			}
-			if (index < betweens.size()) {
-		        answer += betweens[index];
-		        ++ index;
-		    }
-		    corpus += answer;
-		}
-		fprintf(out, "%s\n", corpus.c_str());
-	}
+        string sentence = "";
+        // if (line.size() == 0) continue;
+        for (int i = 0; line[i]; ++ i) {
+            char ch = line[i];
+            if (ENDINGS.find(ch) != -1) {
+                if (sentence.size() > 0) {
+                    sentences.push_back(sentence);
+                    betweens.push_back(string(1, ch));
+                } else {
+                    betweens.back() += ch;
+                }
+                sentence = "";
+            } else {
+                sentence += ch;
+            }
+        }
+        if (sentence.size() > 0) {
+            sentences.push_back(sentence);
+        }
+        string corpus = "";
+        if (!clean_mode) {
+            corpus += betweens[0];
+        }
+        int index = 1;
+        FOR (sentence, sentences) {
+            string origin = *sentence;
+            string text = *sentence;
+            for (size_t i = 0; i < text.size(); ++ i) {
+                if (isalpha(text[i])) {
+                    text[i] = tolower(text[i]);
+                } else if (text[i] != '\'') {
+                    text[i] = ' ';
+                }
+            }
+            vector<pair<string, bool>> segments = parser->segment(text);
+            string answer = "";
+            if (clean_mode) {
+                for (size_t i = 0; i < segments.size(); ++ i) {
+                    if (segments[i].second) {
+                        answer += "[";
+                    }
+                    answer += segments[i].first;
+                    if (segments[i].second) {
+                        answer += "]";
+                    }
+                    answer += " ";
+                }
+                answer += "$ ";
+                corpus += answer;
+            } else {
+                size_t last = 0;
+                if (segments.size() == 0) {
+                    answer += origin;
+                } else {
+                    for (size_t i = 0; i < segments.size(); ++ i) {
+                        size_t st = last;
+                        while (text[st] != segments[i].first[0]) {
+                            ++ st;
+                        }
+                        size_t ed = st;
+                        for (size_t j = 0; j < segments[i].first.size(); ++ j) {
+                            while (text[ed] != segments[i].first[j]) {
+                                ++ ed;
+                            }
+                            ++ ed;
+                        }
+                        
+                        for (size_t j = last; j < st; ++ j) {
+                            answer += origin[j];
+                        }
+                        if (segments[i].second) {
+                            answer += "[";
+                        }
+                        for (size_t j = st; j < ed; ++ j) {
+                            answer += origin[j];
+                        }
+                        if (segments[i].second) {
+                            answer += "]";
+                        }
+                        
+                        last = ed;
+                    }
+                }
+                if (index < betweens.size()) {
+                    answer += betweens[index];
+                    ++ index;
+                }
+                corpus += answer;
+            }
+        }
+        fprintf(out, "%s\n", corpus.c_str());
+    }
     
     cerr << "[done]" << endl;
     return 0;
