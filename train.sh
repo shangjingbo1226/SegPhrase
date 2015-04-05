@@ -76,4 +76,4 @@ cd ..
 time ./bin/generateNN results/vectors.bin results/1.iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/ 30 3 results/u2p_nn.txt results/w2w_nn.txt
 ./bin/qualify_unigrams results/vectors.bin results/1.iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/ results/u2p_nn.txt results/w2w_nn.txt ${ALPHA} results/unified.csv 100 ${STOPWORD_LIST}
 
-python src/postprocessing/filter_by_support.py results/unified.csv results/1.iter5_discard0.05/segmented.txt SUPPORT_THRESHOLD results/salient.csv 
+${PYTHON} src/postprocessing/filter_by_support.py results/unified.csv results/1.iter5_discard0.05/segmented.txt ${SUPPORT_THRESHOLD} results/salient.csv 
