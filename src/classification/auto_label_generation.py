@@ -3,14 +3,15 @@ from random import shuffle
 from math import sqrt
 from sklearn import cluster
 
-if len(sys.argv) != 5:
-    print '[usage] <knowledge base small> <knowledge base large> <feature table> <generated label>'
+if len(sys.argv) != 6:
+    print '[usage] <knowledge base small> <knowledge base large> <feature table> <patterns> <generated label>'
     sys.exit(-1)
 
 knowledge_base = sys.argv[1]
 knowledge_base_large = sys.argv[2]
 feature_table = sys.argv[3]
-generated_label = sys.argv[4]
+patterns = sys.argv[4]
+generated_label = sys.argv[5]
 
 def normalizeMatrix(matrix):
     for i in xrange(dimension):
@@ -50,7 +51,14 @@ for line in open(knowledge_base_large, 'r'):
     word = line.strip()
     word = normalize(word)
     kb_phrases_all.add(word) 
-    
+
+patterns_support = list()
+for line in open(patterns, 'r'):
+    tokens = line.split(',')
+    patterns_support.append(tokens[0].strip(), int(tokens[1]))
+sorted_patterns = sorted(patterns_support, key=lambda tup: -tup[1])
+patterns_candidates = set([tup[0] for tup in sorted_patterns[:len(sorted_patterns) / 4]])
+
 # loading
 dimension = 0
 attributes = []
@@ -71,7 +79,7 @@ for line in open(feature_table, 'r'):
             continue
         coordinates.append(float(tokens[i]))
     dimension = len(coordinates)
-    if tokens[0] in groundtruth:
+    if tokens[0] in groundtruth and tokens[0] in patterns_candidates:
         matrixWiki.append(coordinates)
         phraseWiki.append(tokens[0])
     else:

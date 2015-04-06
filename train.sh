@@ -39,7 +39,7 @@ ${PYTHON} ./src/preprocessing/compute_idf.py -raw ${RAW_TEXT} -o results/wordIDF
 
 if [ ${AUTO_LABEL} -eq 1 ];
 then
-    ${PYTHON} src/classification/auto_label_generation.py ${KNOWLEDGE_BASE} ${KNOWLEDGE_BASE_LARGE} results/feature_table_0.csv ${DATA_LABEL}
+    ${PYTHON} src/classification/auto_label_generation.py ${KNOWLEDGE_BASE} ${KNOWLEDGE_BASE_LARGE} results/feature_table_0.csv results/patterns.csv ${DATA_LABEL}
 fi
 
 # classifier training
