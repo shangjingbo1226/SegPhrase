@@ -55,9 +55,9 @@ for line in open(knowledge_base_large, 'r'):
 patterns_support = list()
 for line in open(patterns, 'r'):
     tokens = line.split(',')
-    patterns_support.append(tokens[0].strip(), int(tokens[1]))
+    patterns_support.append((tokens[0].strip(), int(tokens[1])))
 sorted_patterns = sorted(patterns_support, key=lambda tup: -tup[1])
-patterns_candidates = set([tup[0] for tup in sorted_patterns[:len(sorted_patterns) / 4]])
+patterns_candidates = set([tup[0] for tup in sorted_patterns[:len(sorted_patterns) / 2]])
 
 # loading
 dimension = 0
@@ -108,11 +108,11 @@ for bin in bins:
         labels.append(bin[0] + '\t1\n')
 npos = len(labels)
 # k-means
-kmeans = cluster.MiniBatchKMeans(n_clusters = min(npos * 5, len(matrixOther)), max_iter = 300, batch_size = 5000)
+kmeans = cluster.MiniBatchKMeans(n_clusters = min(npos * 2, len(matrixOther)), max_iter = 300, batch_size = 5000)
 kmeans.fit(matrixOther)
 labelsOther = kmeans.labels_
 bins = []
-for i in xrange(min(npos * 5, len(matrixOther))):
+for i in xrange(min(npos * 2, len(matrixOther))):
     bins.append([])
 
 for i in xrange(len(labelsOther)):
