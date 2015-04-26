@@ -2,7 +2,7 @@
 
 export PYTHON=python
 
-RAW_TEXT=/srv/data/jialu/data/wiki/sampled_wiki_cleaned.txt
+RAW_TEXT=data/DBLP.10K.txt
 AUTO_LABEL=1
 DATA_LABEL=data/wiki.label.auto
 KNOWLEDGE_BASE=data/wiki_labels_quality.txt
@@ -16,9 +16,6 @@ DISCARD_RATIO=0.05
 MAX_ITERATION=5
 
 ALPHA=0.85
-
-SLIDING_WINDOW=10
-SLIDING_THRES=0.5
 
 # clearance
 rm -rf tmp
@@ -57,7 +54,6 @@ MAX_ITERATION_1=$(expr $MAX_ITERATION + 1)
 ./bin/adjust_probability tmp/sentences.buf ${OMP_NUM_THREADS} results/ranking_1.csv results/patterns.csv ${DISCARD_RATIO} ${MAX_ITERATION} ./results/1. ${DATA_LABEL} ./results/penalty.2
 
 # phrase list & segmentation model
-./bin/prune_and_combine results/1.iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/length ${SLIDING_WINDOW} ${SLIDING_THRES} results/phrase_list.txt DET results/phrase_list.stat
 ./bin/build_model results/1.iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/ 6 ./results/penalty.2 results/segmentation.model
 
 # unigrams
