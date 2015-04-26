@@ -2,17 +2,17 @@
 
 export PYTHON=python
 
-RAW_TEXT=data/DBLP.10K.txt
+RAW_TEXT=data/raw_stanford.txt
 AUTO_LABEL=1
 DATA_LABEL=data/wiki.label.auto
 KNOWLEDGE_BASE=data/wiki_labels_quality.txt
 KNOWLEDGE_BASE_LARGE=data/wiki_labels_all.txt
 
 STOPWORD_LIST=data/stopwords.txt
-SUPPORT_THRESHOLD=30
+SUPPORT_THRESHOLD=10
 
 OMP_NUM_THREADS=10
-DISCARD_RATIO=0.05
+DISCARD_RATIO=0.00
 MAX_ITERATION=5
 
 ALPHA=0.85
@@ -72,4 +72,4 @@ cd ..
 time ./bin/generateNN results/vectors.bin results/1.iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/ 30 3 results/u2p_nn.txt results/w2w_nn.txt
 ./bin/qualify_unigrams results/vectors.bin results/1.iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/ results/u2p_nn.txt results/w2w_nn.txt ${ALPHA} results/unified.csv 100 ${STOPWORD_LIST}
 
-${PYTHON} src/postprocessing/filter_by_support.py results/unified.csv results/1.iter5_discard0.05/segmented.txt ${SUPPORT_THRESHOLD} results/salient.csv 
+${PYTHON} src/postprocessing/filter_by_support.py results/unified.csv results/1.iter${MAX_ITERATION}_discard${DISCARD_RATIO}/segmented.txt ${SUPPORT_THRESHOLD} results/salient.csv 
