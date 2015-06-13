@@ -2,7 +2,7 @@
 
 export PYTHON=python
 
-RAW_TEXT=data/raw_stanford.txt
+RAW_TEXT=data/DBLP.10K.txt
 AUTO_LABEL=1
 DATA_LABEL=data/wiki.label.auto
 KNOWLEDGE_BASE=data/wiki_labels_quality.txt
