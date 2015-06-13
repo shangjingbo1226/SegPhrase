@@ -28,8 +28,8 @@ $ make
 ## Default Run
 
 ```
-$ ./train.sh
-$ ./parse.sh
+$ ./train.sh  #train a segmenter and output phrase list as results/salient.csv
+$ ./parse.sh  #use the segmenter to parse new documents
 ```
 
 ## Parameters - train.sh
