@@ -1,5 +1,15 @@
 # SegPhrase
 
+## Publication
+
+```
+Liu, J., Shang, J., Wang, C., Ren, X., & Han, J. (2015, May). Mining Quality Phrases from Massive Text Corpora. In Proceedings of the 2015 ACM SIGMOD International Conference on Management of Data (pp. 1729-1744). ACM.
+```
+
+## Notes
+
+The current results contain unigrams, which are not so stable on the performance. We will keep updating our unigram part.
+
 ## Requirements
 
 We will take Ubuntu for example.
@@ -57,7 +67,7 @@ SUPPORT_THRESHOLD=10
 A hard threshold of raw frequency is specified for frequent phrase mining, which will generate a candidate set.
 
 ```
-OMP_NUM_THREADS=10
+OMP_NUM_THREADS=4
 ```
 You can also specify how many threads can be used for SegPhrase
 
