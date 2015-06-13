@@ -1,6 +1,6 @@
 # SegPhrase
 
-## Requirements ##
+## Requirements
 
 We will take Ubuntu for example.
 
@@ -18,21 +18,21 @@ $ sudo apt-get install pip
 $ sudo pip install sklearn
 ```
 
-## Build ##
+## Build
 
 SegPhrase can be easily built by Makefile in the terminal.
 ```
 $ make
 ```
 
-## Default Run ## 
+## Default Run
 
 ```
 $ ./train.sh
 $ ./parse.sh
 ```
 
-## Parameters - train.sh##
+## Parameters - train.sh
 
 ```
 RAW_TEXT=data/raw_stanford.txt
@@ -76,7 +76,7 @@ ALPHA=0.85
 ```
 Alpha is used in the label propagation from phrases to unigrams.
 
-## Parameters - parse.sh##
+## Parameters - parse.sh
 
 ```
 ./bin/segphrase_parser results/segmentation.model results/salient.csv 50000 ./data/test.txt ./results/parsed.txt 0
