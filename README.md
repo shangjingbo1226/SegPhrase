@@ -2,13 +2,13 @@
 
 ## Publication
 
-
-* Liu, J., Shang, J., Wang, C., Ren, X., & Han, J. (2015, May). Mining Quality Phrases from Massive Text Corpora. In Proceedings of the 2015 ACM SIGMOD International Conference on Management of Data (pp. 1729-1744). ACM.
-
+* Jialu Liu#, Jingbo Shang#, Chi Wang, Xiang Ren and Jiawei Han, "**[Mining Quality Phrases from Massive Text Corpora](http://jialu.cs.illinois.edu/paper/sigmod2015-liu.pdf)**”, Proc. of 2015 ACM SIGMOD Int. Conf. on Management of Data (SIGMOD'15), Melbourne, Australia, May 2015. (# equally contributed) [slides](http://jialu.cs.illinois.edu/paper/sigmod2015-liu-slides.pdf)
 
 ## Notes
 
-The current results contain unigrams, which are not so stable on the performance. We will keep updating our unigram part.
+The current results supports quality unigram mining, which is not covered in the original paper. We plan to improve that part in the future updates.
+
+Automatic labeling is another addon feature based on Wikipedia entities. It is suggested to provide your own labels in order to achieve the best performance.
 
 ## Requirements
 
