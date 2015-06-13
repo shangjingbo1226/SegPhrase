@@ -35,7 +35,7 @@ $ ./parse.sh
 ## Parameters - train.sh
 
 ```
-RAW_TEXT=data/raw_stanford.txt
+RAW_TEXT=data/DBLP.10K.txt
 ```
 RAW_TEXT is the input of SegPhrase, where each line is a single document.
 
