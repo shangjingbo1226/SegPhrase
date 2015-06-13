@@ -2,9 +2,9 @@
 
 ## Publication
 
-```
-Liu, J., Shang, J., Wang, C., Ren, X., & Han, J. (2015, May). Mining Quality Phrases from Massive Text Corpora. In Proceedings of the 2015 ACM SIGMOD International Conference on Management of Data (pp. 1729-1744). ACM.
-```
+
+* Liu, J., Shang, J., Wang, C., Ren, X., & Han, J. (2015, May). Mining Quality Phrases from Massive Text Corpora. In Proceedings of the 2015 ACM SIGMOD International Conference on Management of Data (pp. 1729-1744). ACM.
+
 
 ## Notes
 
