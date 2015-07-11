@@ -27,7 +27,7 @@ $ sudo apt-get install python
 $ sudo apt-get install pip
 $ sudo pip install sklearn
 ```
-* nltk (required on when WORDNET_NOUN=1)
+* nltk (required only when WORDNET_NOUN=1)
 ```
 $ sudo pip install nltk
 ```
