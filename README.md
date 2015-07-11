@@ -27,6 +27,10 @@ $ sudo apt-get install python
 $ sudo apt-get install pip
 $ sudo pip install sklearn
 ```
+* nltk (required on when WORDNET_NOUN=1)
+```
+$ sudo pip install nltk
+```
 
 ## Build
 
@@ -54,6 +58,11 @@ AUTO_LABEL=1
 DATA_LABEL=data/wiki.label.auto
 ```
 When AUTO_LABEL is set to 1, SegPhrase will automatically generate labels and save it to DATA_LABEL. Otherwise, it will load labels from DATA_LABEL.
+
+```
+WORDNET_NOUN=1
+```
+when WORDNET_NOUN is set to 1, SegPhrase will resort to wordnet synsets to keep only noun candidates as the last step of training. This requires you to install nltk in python.
 
 ```
 KNOWLEDGE_BASE=data/wiki_labels_quality.txt
