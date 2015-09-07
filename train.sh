@@ -2,20 +2,21 @@
 
 export PYTHON=python
 
-RAW_TEXT=data/DBLP.5K.txt
+RAW_TEXT='data/DBLP.5K.txt'
 AUTO_LABEL=1
 WORDNET_NOUN=0
-DATA_LABEL=data/wiki.label.auto
-KNOWLEDGE_BASE=data/wiki_labels_quality.txt
-KNOWLEDGE_BASE_LARGE=data/wiki_labels_all.txt
+DATA_LABEL='data/wiki.label.auto'
+KNOWLEDGE_BASE='data/wiki_labels_quality.txt'
+KNOWLEDGE_BASE_LARGE='data/wiki_labels_all.txt'
 
-STOPWORD_LIST=data/stopwords.txt
+STOPWORD_LIST='data/stopwords.txt'
 SUPPORT_THRESHOLD=10
 
 OMP_NUM_THREADS=4
 DISCARD_RATIO=0.00
 MAX_ITERATION=5
 
+NEED_UNIGRAM=0
 ALPHA=0.85
 
 # clearance
@@ -37,7 +38,10 @@ ${PYTHON} ./src/preprocessing/compute_idf.py -raw ${RAW_TEXT} -o results/wordIDF
 
 if [ ${AUTO_LABEL} -eq 1 ];
 then
+	echo ===Auto Label Enable===
     ${PYTHON} src/classification/auto_label_generation.py ${KNOWLEDGE_BASE} ${KNOWLEDGE_BASE_LARGE} results/feature_table_0.csv results/patterns.csv ${DATA_LABEL}
+else
+	echo ===Auto Label Disable===
 fi
 
 # classifier training
@@ -57,24 +61,31 @@ MAX_ITERATION_1=$(expr $MAX_ITERATION + 1)
 # phrase list & segmentation model
 ./bin/build_model results/1.iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/ 6 ./results/penalty.2 results/segmentation.model
 
-# unigrams
-normalize_text() {
-  awk '{print tolower($0);}' | sed -e "s/’/'/g" -e "s/′/'/g" -e "s/''/ /g" -e "s/'/ ' /g" -e "s/“/\"/g" -e "s/”/\"/g" \
-  -e 's/"/ " /g' -e 's/\./ \. /g' -e 's/<br \/>/ /g' -e 's/, / , /g' -e 's/(/ ( /g' -e 's/)/ ) /g' -e 's/\!/ \! /g' \
-  -e 's/\?/ \? /g' -e 's/\;/ /g' -e 's/\:/ /g' -e 's/-/ - /g' -e 's/=/ /g' -e 's/=/ /g' -e 's/*/ /g' -e 's/|/ /g' \
-  -e 's/«/ /g' | tr 0-9 " "
-}
-normalize_text < results/1.iter${MAX_ITERATION}_discard${DISCARD_RATIO}/segmented.txt > tmp/normalized.txt
+if [ ${NEED_UNIGRAM} -eq 1 ];
+then
+	echo ===Unigram Enable===
+	# unigrams
+	normalize_text() {
+	  awk '{print tolower($0);}' | sed -e "s/’/'/g" -e "s/′/'/g" -e "s/''/ /g" -e "s/'/ ' /g" -e "s/“/\"/g" -e "s/”/\"/g" \
+	  -e 's/"/ " /g' -e 's/\./ \. /g' -e 's/<br \/>/ /g' -e 's/, / , /g' -e 's/(/ ( /g' -e 's/)/ ) /g' -e 's/\!/ \! /g' \
+	  -e 's/\?/ \? /g' -e 's/\;/ /g' -e 's/\:/ /g' -e 's/-/ - /g' -e 's/=/ /g' -e 's/=/ /g' -e 's/*/ /g' -e 's/|/ /g' \
+	  -e 's/«/ /g' | tr 0-9 " "
+	}
+	normalize_text < results/1.iter${MAX_ITERATION}_discard${DISCARD_RATIO}/segmented.txt > tmp/normalized.txt
 
-cd word2vec_tool
-make
-cd ..
-./word2vec_tool/word2vec -train tmp/normalized.txt -output ./results/vectors.bin -cbow 2 -size 300 -window 6 -negative 25 -hs 0 -sample 1e-4 -threads ${OMP_NUM_THREADS} -binary 1 -iter 15
-time ./bin/generateNN results/vectors.bin results/1.iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/ 30 3 results/u2p_nn.txt results/w2w_nn.txt
-./bin/qualify_unigrams results/vectors.bin results/1.iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/ results/u2p_nn.txt results/w2w_nn.txt ${ALPHA} results/unified.csv 100 ${STOPWORD_LIST}
+	cd word2vec_tool
+	make
+	cd ..
+	./word2vec_tool/word2vec -train tmp/normalized.txt -output ./results/vectors.bin -cbow 2 -size 300 -window 6 -negative 25 -hs 0 -sample 1e-4 -threads ${OMP_NUM_THREADS} -binary 1 -iter 15
+	time ./bin/generateNN results/vectors.bin results/1.iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/ 30 3 results/u2p_nn.txt results/w2w_nn.txt
+	./bin/qualify_unigrams results/vectors.bin results/1.iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/ results/u2p_nn.txt results/w2w_nn.txt ${ALPHA} results/unified.csv 100 ${STOPWORD_LIST}
+else
+	echo ===Unigram Disable===
+	./bin/combine_phrases results/1.iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/ results/unified.csv
+fi
 
 ${PYTHON} src/postprocessing/filter_by_support.py results/unified.csv results/1.iter${MAX_ITERATION}_discard${DISCARD_RATIO}/segmented.txt ${SUPPORT_THRESHOLD} results/salient.csv 
-
+	
 if [ ${WORDNET_NOUN} -eq 1 ];
 then
     ${PYTHON} src/postprocessing/clean_list_with_wordnet.py -input results/salient.csv -output results/salient.csv 

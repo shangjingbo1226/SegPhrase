@@ -30,7 +30,7 @@ def main(argv):
             out.write(line)
         else:
             filtered_cnt += 1
-            print 'filtered: ', lexicon, support[key]
+            #print 'filtered: ', lexicon, support[key]
     print 'done. filtered_cnt =', filtered_cnt, 'keep_cnt =', keep_cnt
 
 if __name__ == '__main__':
