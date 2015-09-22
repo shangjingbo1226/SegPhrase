@@ -1,4 +1,4 @@
-# SegPhrase
+# SegPhrase with POS Tagging enhancing the segmentation
 
 ## Publication
 
