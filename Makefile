@@ -12,7 +12,7 @@ all: ./bin $(BIN)
 ./bin/from_raw_to_binary_text: ./src/preprocessing/from_raw_to_binary_text.cpp ./src/utils/helper.h
 ./bin/feature_extraction: ./src/classification/feature_extraction.cpp ./src/utils/helper.h ./src/classification/aho_corasick.h
 ./bin/predict_quality: ./src/classification/predict_quality.cpp ./src/utils/helper.h ./src/classification/random_forest.h
-./bin/adjust_probability: ./src/model_training/adjust_probability.cpp ./src/utils/helper.h
+./bin/adjust_probability: ./src/model_training/adjust_probability.cpp ./src/utils/helper.h ./src/model_training/viterbi_training.h
 ./bin/recompute_features: ./src/model_training/recompute_features.cpp ./src/utils/helper.h
 ./bin/prune_and_combine: ./src/postprocessing/prune_and_combine.cpp ./src/utils/helper.h
 ./bin/build_model: ./src/postprocessing/build_model.cpp ./src/utils/helper.h

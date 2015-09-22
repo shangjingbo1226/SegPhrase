@@ -83,9 +83,39 @@ private:
         }
     }
 
+    unordered_map<string, double> logProbPOS;
+
+    double getLogProbPOS(string POS1, string POS2) {
+        if (logProbPOS.count(POS1 + "+" + POS2)) {
+            return logProbPOS[POS1 + "+" + POS2];
+        } else {
+            return log(0.5 + EPS); // the default prob?
+        }
+    }
+
+    void loadPOSConstraints(string filename) {
+        FILE* in = tryOpen(filename, "r");
+        while (getLine(in)) {
+            // POS1,POS2,probability
+            // e.g. NN,NN,1   <-- consecutive NNs should be together
+            // e.g. NN,VERB,0
+            vector<string> tokens = splitBy(line, ',');
+            double prob;
+            string POS1 = tokens[0];
+            string POS2 = tokens[1];
+            fromString(tokens[2], prob);
+            prob = max(prob, EPS);
+            logProbPOS[POS1 + "+" + POS2] = log(prob);
+        }
+        fclose(in);
+    }
+
 public:
-    SegPhraseParser(string modelFilename, int topK = 0) {
+    SegPhraseParser(string modelFilename, int topK = 0, string POSConstraintsFilename = "") {
         loadModel(modelFilename, topK);
+        if (POSConstraintsFilename != "") {
+            loadPOSConstraints(POSConstraintsFilename);
+        }
     }
 
     unordered_set<string> dict;
@@ -94,8 +124,12 @@ public:
         dict = x;
     }
 
-    vector<pair<string, bool>> segment(const string &sentence) {
+    vector<pair<string, bool>> segment(const string &sentence, const vector<string> &POS = vector<string>()) {
         vector<string> tokens = splitBy(sentence, ' ');
+
+        if (POS.size() != 0) {
+            myAssert(POS.size() == tokens.size(), "[ERROR] POS information should be matched with the sentence");
+        }
 
     	vector<double> f(tokens.size() + 1, -INF);
     	vector<int> pre(tokens.size() + 1, -1);
@@ -117,6 +151,15 @@ public:
     			}
     			if (prob.count(token) && (dict.size() == 0 || dict.count(token))) {
     				double p = prob[token];
+    				if (POS.size() != 0) {
+                        // i .. j
+                        if (j + 1 < POS.size()) {
+                            p += log(max(1 - exp(getLogProbPOS(POS[j], POS[j + 1])), EPS));
+                        }
+                        for (int k = i; k < j; ++ k) {
+                            p += getLogProbPOS(POS[k], POS[k + 1]);
+                        }
+                    }
     				if (f[i] + p > f[j + 1]) {
     					f[j + 1] = f[i] + p;
     					pre[j + 1] = i;
@@ -124,6 +167,12 @@ public:
     			} else {
     			    if (i == j) {
     			        double p = penaltyForUnrecognizedUnigram;
+    			        if (POS.size() != 0) {
+                            // unigram j
+                            if (j + 1 < POS.size()) {
+                                p += log(max(1 - exp(getLogProbPOS(POS[j], POS[j + 1])), EPS));
+                            }
+                        }
     			        if (f[i] + p > f[j + 1]) {
         					f[j + 1] = f[i] + p;
         					pre[j + 1] = i;
