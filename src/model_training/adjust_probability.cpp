@@ -1,4 +1,5 @@
 #include "../utils/helper.h"
+#include "viterbi_training.h"
 #include <omp.h>
 #include <cassert>
 
@@ -191,10 +192,9 @@ string dumpResult(int round, const string &prefix, const vector<double> &pw, boo
     return folder;
 }
 
-void DP(int round, double penalty, bool needSegmentResult = false, bool onlyDump = false)
+void segmentation(int round, double penalty, bool needSegmentResult = false, bool onlyDump = false)
 {
-//    cerr << "round = " << round << ", penalty = " << penalty << endl;
-    vector<double> pw(maxLen + 1, 1);// P(length)
+    vector<double> pw(maxLen + 1, 1); // P(length)
     double totalPw = 1;
     for (int i = 1; i <= maxLen; ++ i) {
         pw[i] = pw[i - 1] / penalty;
@@ -207,14 +207,14 @@ void DP(int round, double penalty, bool needSegmentResult = false, bool onlyDump
     normalize();
 
     string newpath = dumpResult(round, outputFile, pw, needSegmentResult || onlyDump);
-//    cerr << "    previous results dumped" << endl;
 
     if (onlyDump) {
         return;
     }
 
-    // initialize
+    // initialization
     makeLog(prob, allPhrases);
+
 	vector< vector<int> > occur(nthreads, vector<int>());
     #pragma omp parallel for schedule(static)
     for (int i = 0; i < nthreads; ++ i) {
@@ -222,89 +222,13 @@ void DP(int round, double penalty, bool needSegmentResult = false, bool onlyDump
     }
 
 	vector< string > parsed(sentences.size(), "");
-
     double energy = 0;
 	#pragma omp parallel for schedule(dynamic, 1000) reduction(+:energy)
     for (size_t sentenceID = 0; sentenceID < sentences.size(); ++ sentenceID) {
+        int tid = omp_get_thread_num();
     	vector<string> &tokens = sentencesTokens[sentenceID];
-    	vector<double> f(tokens.size() + 1, -INF);
-    	vector<int> pre(tokens.size() + 1, -1);
-    	f[0] = 0;
-    	pre[0] = 0;
-    	for (size_t i = 0 ; i < tokens.size(); ++ i) {
-    		if (f[i] < -1e80) {
-    			continue;
-    		}
-    		string token = "";
-    		size_t j = i;
-    		while (j < tokens.size()) {
-    			if (j == i) {
-    				token = tokens[i];
-    			} else {
-    				token += " ";
-    				token += tokens[j];
-    			}
-    			if (prob.count(token)) {
-    				double p = prob[token];
-    				if (f[i] + p > f[j + 1]) {
-    					f[j + 1] = f[i] + p;
-    					pre[j + 1] = i;
-    				}
-    			} else {
-    				if (j > maxLen + i) {
-    					break;
-    				}
-    			}
-    			++ j;
-    		}
-    	}
-    	energy += f[tokens.size()];
-    	if (true) {
-    		int tid = omp_get_thread_num();
-    		int i = (int)tokens.size();
-            vector<string> segments;
-    		while (i > 0) {
-    			int j = pre[i];
-    			string token = "";
-    			for (int k = j; k < i; ++ k) {
-    				if (k > j) {
-    					token += " ";
-    				}
-    				token += tokens[k];
-    			}
-                assert(phrase2id.count(token));
-    			++ occur[tid][phrase2id[token]];
-    			i = j;
-
-                if (needSegmentResult) {
-                    for (size_t k = 0; k < token.size(); ++ k) {
-                        if (token[k] == ' ') {
-                            token[k] = '_';
-                        }
-                    }
-                    segments.push_back(token);
-                }
-    		}
-
-            if (needSegmentResult) {
-                string &ret = parsed[sentenceID];
-                for (int _ = (int)segments.size() - 1; _ >= 0; -- _) {
-                    if (segments[_] == "") {
-                        continue;
-                    }
-                    if (ret.size()) {
-                        ret += " ";
-                    }
-                    ret += segments[_];
-                }
-                if (tokens.size() != 0) {
-                    assert(ret != "");
-                }
-            }
-    	}
+        energy += ViterbiTraining::train(tokens, prob, maxLen, phrase2id, occur[tid], needSegmentResult, parsed[sentenceID]);
     }
-
-//    cerr << "    energy = " << energy << endl;
 
     vector<int> sum(allPhrases.size(), 0);
     #pragma omp parallel for schedule(static)
@@ -321,7 +245,6 @@ void DP(int round, double penalty, bool needSegmentResult = false, bool onlyDump
             prob[allPhrases[i]] = sum[i];
         }
     }
-//    cerr << "    # candidate phrases = " << prob.size() << endl;
 
     if (needSegmentResult) {
         finalSegmentation = "";
@@ -337,7 +260,6 @@ void DP(int round, double penalty, bool needSegmentResult = false, bool onlyDump
             }
             finalSegmentation += parsed[i] + "\n";
         }
-//        cerr << "======= cnt = " << cnt << " ==========" << endl;
         FILE* out = tryOpen(newpath + "/segmented.txt", "w");
         fprintf(out, "%s\n", finalSegmentation.c_str());
         fclose(out);
@@ -359,8 +281,6 @@ void loadPattern(const string &filename)
 	}
 	fclose(in);
 
-//	cerr << "# Pattern = " << prob.size() << endl;
-
 	FOR (iter, unigrams) {
 		logistic[iter->first] = 1.0;
 	}
@@ -377,8 +297,6 @@ void loadLogistic(const string &filename)
 		logistic[pattern] = pred;
 	}
 	fclose(in);
-
-//	cerr << "# logistic = " << logistic.size() << endl;
 }
 
 void loadSentences(const string &filename)
@@ -391,7 +309,6 @@ void loadSentences(const string &filename)
 	for (size_t i = 0; i < size; ++ i) {
 		Binary::read(in, sentences[i]);
 	}
-//	cerr << "# Sentences Loaded = " << size << endl;
 
 	Binary::read(in, size);
 	allUnigrams.resize(size);
@@ -401,7 +318,6 @@ void loadSentences(const string &filename)
         unigram2id[allUnigrams[i]] = i;
 		allPhrases.push_back(allUnigrams[i]);
 	}
-//	cerr << "# Unigrams Loaded = " << size << endl;
 	fclose(in);
 
 	vector< vector<int> > unigramsList(nthreads, vector<int>(allUnigrams.size(), 0));
@@ -410,7 +326,6 @@ void loadSentences(const string &filename)
 	for (size_t i = 0; i < sentences.size(); ++ i) {
 		vector<string> &tokens = sentencesTokens[i];
 		tokens = splitBy(sentences[i], ' ');
-
 		int tid = omp_get_thread_num();
 		FOR (token, tokens) {
 			++ unigramsList[tid][unigram2id[*token]];
@@ -428,7 +343,6 @@ void loadSentences(const string &filename)
     for (size_t i = 0; i < allUnigrams.size(); ++ i) {
         unigrams[allUnigrams[i]] = sum[i];
     }
-//	cerr << "# the = " << unigrams["the"] << endl;
 }
 
 int main(int argc, char* argv[])
@@ -445,8 +359,6 @@ int main(int argc, char* argv[])
 	loadSentences(argv[1]);
 	loadLogistic(argv[3]);
 	loadPattern(argv[4]);
-
-//    cerr << "# all phrase candidates = " << allPhrases.size() << endl;
 
 	FOR (iter, unigrams) {
 		logistic[iter->first] = 1.0;
@@ -480,10 +392,10 @@ int main(int argc, char* argv[])
 	double lower = EPS, upper = 200;
 	double penalty = EPS;
 	unordered_map<string, double> backup = prob;
-	DP(0, lower, false, false);
+	segmentation(0, lower, false, false);
 	unordered_map<string, double> large = prob;
 	prob = backup;
-	DP(0, upper, false, false);
+	segmentation(0, upper, false, false);
 	unordered_map<string, double> small = prob;
 
 	prob = backup;
@@ -493,13 +405,11 @@ int main(int argc, char* argv[])
 	backup = prob;
 
 	for (int _ = 0; _ < 10; ++ _) {
-//	    cerr << "[lower, upper] = [" << lower << ", " << upper << "]" << endl;
         penalty = (lower + upper) / 2;
 
         prob = backup;
-        DP(-(_ + 1), penalty, false, false);
+        segmentation(-(_ + 1), penalty, false, false);
 
-//        cerr << "penalty = "  << penalty << endl;
         if (getPenalty(argv[8], penalty)) {
             lower = penalty;
         } else {
@@ -515,13 +425,11 @@ int main(int argc, char* argv[])
 
 	prob = backup;
     for (int round = 1; round <= maxIter; ++ round) {
-        DP(round, penalty, round == maxIter);
+        segmentation(round, penalty, round == maxIter);
     }
-    DP(maxIter + 1, penalty, false, true);
+    segmentation(maxIter + 1, penalty, false, true);
 
     cerr << "adjust probability done." << endl;
 
 	return 0;
 }
-
-
