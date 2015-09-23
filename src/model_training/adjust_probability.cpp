@@ -3,6 +3,27 @@
 #include <omp.h>
 #include <cassert>
 
+vector<string> POS;
+vector< vector<string> > POStokens;
+
+void loadPOS(const string &filename)
+{
+    FILE* in = tryOpen(filename, "rb");
+	size_t size;
+	Binary::read(in, size);
+	POS.resize(size);
+	POStokens.resize(size);
+	for (size_t i = 0; i < size; ++ i) {
+		Binary::read(in, POS[i]);
+	}
+
+	#pragma omp parallel for schedule(dynamic, 1000)
+	for (size_t i = 0; i < POS.size(); ++ i) {
+		vector<string> &tokens = POStokens[i];
+		tokens = splitBy(POS[i], ' ');
+	}
+}
+
 void makeLog(unordered_map<string, double> &prob, const vector<string> &allPhrases)
 {
     #pragma omp parallel for schedule(static)
@@ -227,7 +248,7 @@ void segmentation(int round, double penalty, bool needSegmentResult = false, boo
     for (size_t sentenceID = 0; sentenceID < sentences.size(); ++ sentenceID) {
         int tid = omp_get_thread_num();
     	vector<string> &tokens = sentencesTokens[sentenceID];
-        energy += ViterbiTraining::train(tokens, prob, maxLen, phrase2id, occur[tid], needSegmentResult, parsed[sentenceID]);
+        energy += ViterbiTraining::train(tokens, prob, maxLen, phrase2id, occur[tid], needSegmentResult, parsed[sentenceID], POStokens[sentenceID]);
     }
 
     vector<int> sum(allPhrases.size(), 0);
@@ -348,8 +369,8 @@ void loadSentences(const string &filename)
 int main(int argc, char* argv[])
 {
 	int maxIter;
-	if (argc != 10 || sscanf(argv[2], "%d", &nthreads) != 1 || sscanf(argv[5], "%lf", &discard) != 1 || sscanf(argv[6], "%d", &maxIter) != 1) {
-		cerr << "[Usage] <input-sentence-buffer> <nthreads> <logistic> <pattern> <discard> <maxIter> <outputFile> <labels> <save penalty>" << endl;
+	if (argc < 10 || sscanf(argv[2], "%d", &nthreads) != 1 || sscanf(argv[5], "%lf", &discard) != 1 || sscanf(argv[6], "%d", &maxIter) != 1) {
+		cerr << "[Usage] <input-sentence-buffer> <nthreads> <logistic> <pattern> <discard> <maxIter> <outputFile> <labels> <save penalty> [optional: POS.buf]" << endl;
 		return -1;
 	}
     outputFile = argv[7];
@@ -359,6 +380,24 @@ int main(int argc, char* argv[])
 	loadSentences(argv[1]);
 	loadLogistic(argv[3]);
 	loadPattern(argv[4]);
+
+	if (argc > 10) {
+        loadPOS(argv[10]);
+        cerr << POS.size() << endl;
+        cerr << sentences.size() << endl;
+        for (int i = 0; i < POS.size(); ++ i) {
+            if (POStokens[i].size() != sentencesTokens[i].size()) {
+                cerr << i << endl;
+                cerr << POS[i] << endl;
+                cerr << sentences[i] << endl;
+                break;
+            }
+        }
+        myAssert(POS.size() == sentences.size(), "[ERROR] sentences numbers mismatched!");
+    }
+
+    // TODO
+    ViterbiTraining::loadPOSConstraints("data/POSConstraints.csv");
 
 	FOR (iter, unigrams) {
 		logistic[iter->first] = 1.0;

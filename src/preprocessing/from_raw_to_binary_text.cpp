@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
 		cerr << "[Usage] <input-raw-text-file> <output-binary-file>" << endl;
 		return -1;
 	}
-	
+
 	FILE* in = tryOpen(argv[1], "r");
 	vector<string> sentences;
 	for (;getLine(in);) {
@@ -29,16 +29,16 @@ int main(int argc, char* argv[])
 		}
 	}
 	fclose(in);
-	
+
 	cerr << "# Sentences = " << sentences.size() << endl;
-	
+
 	FILE* out = tryOpen(argv[2], "wb");
-	
+
 	Binary::write(out, sentences.size());
 	FOR (sentence, sentences) {
 		Binary::write(out, *sentence);
 	}
-		
+
 	return 0;
 }
 

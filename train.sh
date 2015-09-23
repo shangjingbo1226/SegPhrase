@@ -2,7 +2,15 @@
 
 export PYTHON=python
 
-RAW_TEXT='data/DBLP.5K.txt'
+TSV_TEXT='data/10000_text.tsv'
+TSV_POS='data/10000_POS.tsv'
+
+RAW_TEXT='data/10000_converted_text.txt'
+RAW_POS='data/10000_converted_pos.txt'
+
+# preprocessing
+./bin/align_text_and_POS ${TSV_TEXT} ${TSV_POS} ${RAW_TEXT} ${RAW_POS}
+
 AUTO_LABEL=1
 WORDNET_NOUN=0
 DATA_LABEL='data/wiki.label.auto'
@@ -12,7 +20,7 @@ KNOWLEDGE_BASE_LARGE='data/wiki_labels_all.txt'
 STOPWORD_LIST='data/stopwords.txt'
 SUPPORT_THRESHOLD=10
 
-OMP_NUM_THREADS=4
+OMP_NUM_THREADS=20
 DISCARD_RATIO=0.00
 MAX_ITERATION=5
 
@@ -51,12 +59,14 @@ MAX_ITERATION_1=$(expr $MAX_ITERATION + 1)
 
 # 1-st round
 ./bin/from_raw_to_binary ${RAW_TEXT} tmp/sentences.buf
-./bin/adjust_probability tmp/sentences.buf ${OMP_NUM_THREADS} results/ranking.csv results/patterns.csv ${DISCARD_RATIO} ${MAX_ITERATION} ./results/ ${DATA_LABEL} ./results/penalty.1
+./bin/from_raw_to_binary ${RAW_POS} tmp/POS.buf
+
+./bin/adjust_probability tmp/sentences.buf ${OMP_NUM_THREADS} results/ranking.csv results/patterns.csv ${DISCARD_RATIO} ${MAX_ITERATION} ./results/ ${DATA_LABEL} ./results/penalty.1 tmp/POS.buf
 
 # 2-nd round
 ./bin/recompute_features results/iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/length results/feature_table_0.csv results/patterns.csv tmp/sentencesWithPunc.buf results/feature_table_1.csv ./results/penalty.1 1
 ./bin/predict_quality results/feature_table_1.csv ${DATA_LABEL} results/ranking_1.csv outsideSentence,log_occur_feature,constant,frequency 0 TRAIN results/random_forest_1.model
-./bin/adjust_probability tmp/sentences.buf ${OMP_NUM_THREADS} results/ranking_1.csv results/patterns.csv ${DISCARD_RATIO} ${MAX_ITERATION} ./results/1. ${DATA_LABEL} ./results/penalty.2
+./bin/adjust_probability tmp/sentences.buf ${OMP_NUM_THREADS} results/ranking_1.csv results/patterns.csv ${DISCARD_RATIO} ${MAX_ITERATION} ./results/1. ${DATA_LABEL} ./results/penalty.2 tmp/POS.buf
 
 # phrase list & segmentation model
 ./bin/build_model results/1.iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/ 6 ./results/penalty.2 results/segmentation.model

@@ -3,11 +3,12 @@ export CC  = gcc
 export CXX = g++
 export CFLAGS = -std=c++11 -Wall -O3 -msse2  -fopenmp  -I..
 
-BIN = ./bin/from_raw_to_binary ./bin/from_raw_to_binary_text ./bin/feature_extraction ./bin/predict_quality ./bin/adjust_probability ./bin/recompute_features ./bin/prune_and_combine ./bin/build_model ./bin/qualify_unigrams ./bin/segphrase_parser ./bin/generateNN ./bin/combine_phrases
+BIN = ./bin/from_raw_to_binary ./bin/from_raw_to_binary_text ./bin/feature_extraction ./bin/predict_quality ./bin/adjust_probability ./bin/recompute_features ./bin/prune_and_combine ./bin/build_model ./bin/qualify_unigrams ./bin/segphrase_parser ./bin/generateNN ./bin/combine_phrases ./bin/align_text_and_POS
 .PHONY: clean all
 
 all: ./bin $(BIN)
 
+./bin/align_text_and_POS: ./src/preprocessing/align_text_and_POS.cpp ./src/utils/helper.h
 ./bin/from_raw_to_binary: ./src/preprocessing/from_raw_to_binary.cpp ./src/utils/helper.h
 ./bin/from_raw_to_binary_text: ./src/preprocessing/from_raw_to_binary_text.cpp ./src/utils/helper.h
 ./bin/feature_extraction: ./src/classification/feature_extraction.cpp ./src/utils/helper.h ./src/classification/aho_corasick.h
