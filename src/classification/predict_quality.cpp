@@ -88,7 +88,7 @@ int main(int argc, char* argv[])
 	    rng.init();
 	    RANDOM_FEATURES = 4;
 	    RANDOM_POSITIONS = 8;
-	    solver->train(train, trainY, 10 * train.size(), 1);
+	    solver->train(train, trainY, 100, 1);
 	} else {
 	    fprintf(stderr, "start to load...\n");
 	    solver->load(argv[6]);
