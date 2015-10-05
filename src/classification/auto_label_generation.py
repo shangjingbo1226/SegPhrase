@@ -62,10 +62,10 @@ patterns_candidates = set([tup[0] for tup in sorted_patterns[:len(sorted_pattern
 # loading
 dimension = 0
 attributes = []
-forbid = ['outsideSentence', 'log_occur_feature' , 'constant', 'frequency']
-matrixWiki = []
+#forbid = ['outsideSentence', 'log_occur_feature' , 'constant', 'frequency']
+#matrixWiki = []
 phraseWiki = []
-matrixOther = []
+#matrixOther = []
 phraseOther = []
 for line in open(feature_table, 'r'):
     tokens = line.split(',')
@@ -73,62 +73,70 @@ for line in open(feature_table, 'r'):
         attributes = tokens
         #print attributes
         continue
-    coordinates = []
-    for i in xrange(1, len(tokens)):
-        if attributes[i] in forbid:
-            continue
-        coordinates.append(float(tokens[i]))
-    dimension = len(coordinates)
+    #coordinates = []
+    #for i in xrange(1, len(tokens)):
+    #    if attributes[i] in forbid:
+    #        continue
+    #    coordinates.append(float(tokens[i]))
+    #dimension = len(coordinates)
     if tokens[0] in groundtruth and tokens[0] in patterns_candidates:
-        matrixWiki.append(coordinates)
+        #matrixWiki.append(coordinates)
         phraseWiki.append(tokens[0])
     else:
-        matrixOther.append(coordinates)
+        #matrixOther.append(coordinates)
         phraseOther.append(tokens[0])
 
 # normalization
-matrixWiki = normalizeMatrix(matrixWiki)
-matrixOther = normalizeMatrix(matrixOther)
+#matrixWiki = normalizeMatrix(matrixWiki)
+#matrixOther = normalizeMatrix(matrixOther)
 
 # k-means
-kmeans = cluster.MiniBatchKMeans(n_clusters = min(200, len(matrixWiki)), max_iter = 300, batch_size = 5000)
-kmeans.fit(matrixWiki)
-labelsWiki = kmeans.labels_
-bins = []
-for i in xrange(1000):
-    bins.append([])
+#kmeans = cluster.MiniBatchKMeans(n_clusters = min(200, len(matrixWiki)), max_iter = 300, batch_size = 5000)
+#kmeans.fit(matrixWiki)
+#labelsWiki = kmeans.labels_
+#bins = []
+#for i in xrange(1000):
+#    bins.append([])
 
-for i in xrange(len(labelsWiki)):
-    bins[labelsWiki[i]].append(phraseWiki[i])
+#for i in xrange(len(labelsWiki)):
+#    bins[labelsWiki[i]].append(phraseWiki[i])
 
 labels = []
-for bin in bins:
-    shuffle(bin)
-    if len(bin) > 0:
-        labels.append(bin[0] + '\t1\n')
-npos = len(labels)
+#for bin in bins:
+#    shuffle(bin)
+#    if len(bin) > 0:
+#        labels.append(bin[0] + '\t1\n')
+#npos = len(labels)
+for i in phraseWiki:
+    labels.append(i + '\t1\n')
+
 # k-means
-kmeans = cluster.MiniBatchKMeans(n_clusters = min(npos * 2, len(matrixOther)), max_iter = 300, batch_size = 5000)
-kmeans.fit(matrixOther)
-labelsOther = kmeans.labels_
-bins = []
-for i in xrange(min(npos * 2, len(matrixOther))):
-    bins.append([])
+#kmeans = cluster.MiniBatchKMeans(n_clusters = min(npos * 2, len(matrixOther)), max_iter = 300, batch_size = 5000)
+#kmeans.fit(matrixOther)
+#labelsOther = kmeans.labels_
+#bins = []
+#for i in xrange(min(npos * 2, len(matrixOther))):
+#    bins.append([])
 
-for i in xrange(len(labelsOther)):
-    bins[labelsOther[i]].append(phraseOther[i])
+#for i in xrange(len(labelsOther)):
+#    bins[labelsOther[i]].append(phraseOther[i])
 
-for bin in bins:
-    shuffle(bin)
-    if len(bin) > 0:
-        for i in xrange(len(bin)):
-            if bin[i] not in kb_phrases_all:
-                labels.append(bin[i] + '\t0\n')
-                break
-        
+#for bin in bins:
+#    shuffle(bin)
+#    if len(bin) > 0:
+#        for i in xrange(len(bin)):
+#            if bin[i] not in kb_phrases_all:
+#                labels.append(bin[i] + '\t0\n')
+#                break
+size = len(labels) * 2
+for i in phraseOther:
+    labels.append(i + '\t0\n')
+    size -= 1
+    if size == 0:
+        break
 out = open(generated_label, 'w')
 out.write(''.join(labels))
 out.close()
 
-print len(labels), 'generated,', npos, 'positive'
+#print len(labels), 'generated,', npos, 'positive'
 

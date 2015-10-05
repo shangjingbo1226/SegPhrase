@@ -102,9 +102,14 @@ int main(int argc, char* argv[])
 	solver->dump(argv[7]);
 	
 	vector< pair<double, string> > results;
+	cout << all.size()<< endl;
 	for (size_t i = 0; i < all.size(); ++ i) {
 		double pred = solver->estimate(all[i]);
 		results.push_back(make_pair(pred, candidates[i]));
+		if (i % 10000 == 0) {
+			cout << i << " ";
+			cout.flush();
+		}
 	}
 	sort(results.rbegin(), results.rend());
 	

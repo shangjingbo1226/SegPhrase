@@ -179,11 +179,15 @@ int main(int argc, char* argv[])
         vector<string> pos_tokens = splitBy(pos, '\t');
 
         myAssert(text_tokens[0] == pos_tokens[0], "[ERROR] ID mismatched!");
-
+        
+        if (text_tokens.size() != 3) continue;
+        pair<string, string> ret;
         // title
-        pair<string, string> ret = align(text_tokens[1], pos_tokens[1]);
-        fprintf(out_text, "%s\n", ret.first.c_str());
-        fprintf(out_pos, "%s\n", ret.second.c_str());
+        if (text_tokens[1].size() != 0) {
+            ret = align(text_tokens[1], pos_tokens[1]);
+            fprintf(out_text, "%s\n", ret.first.c_str());
+            fprintf(out_pos, "%s\n", ret.second.c_str());
+        }
 
         // abstract
         ret = align(text_tokens[2], pos_tokens[2]);

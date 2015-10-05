@@ -2,6 +2,7 @@
 #include "viterbi_training.h"
 #include <omp.h>
 #include <cassert>
+#include <cfloat>
 
 vector<string> POS;
 vector< vector<string> > POStokens;
@@ -248,7 +249,12 @@ void segmentation(int round, double penalty, bool needSegmentResult = false, boo
     for (size_t sentenceID = 0; sentenceID < sentences.size(); ++ sentenceID) {
         int tid = omp_get_thread_num();
     	vector<string> &tokens = sentencesTokens[sentenceID];
-        energy += ViterbiTraining::train(tokens, prob, maxLen, phrase2id, occur[tid], needSegmentResult, parsed[sentenceID], POStokens[sentenceID]);
+        double tmp = ViterbiTraining::train(tokens, prob, maxLen, phrase2id, occur[tid], needSegmentResult, parsed[sentenceID], POStokens[sentenceID]);
+		if (tmp != FLT_MIN) {
+			energy += tmp;
+		} else {
+			cerr << "df";
+		}
     }
 
     vector<int> sum(allPhrases.size(), 0);
@@ -273,7 +279,7 @@ void segmentation(int round, double penalty, bool needSegmentResult = false, boo
         for (size_t i = 0; i < parsed.size(); ++ i) {
             if (parsed[i] == "") {
                 ++ cnt;
-                assert(sentencesTokens[i].size() == 0);
+                //assert(sentencesTokens[i].size() == 0);
                 continue;
             }
             if (finalSegmentation.size() && finalSegmentation[finalSegmentation.size() - 1] != '\n') {
@@ -281,6 +287,7 @@ void segmentation(int round, double penalty, bool needSegmentResult = false, boo
             }
             finalSegmentation += parsed[i] + "\n";
         }
+		cerr << cnt << " empty segmentations.";
         FILE* out = tryOpen(newpath + "/segmented.txt", "w");
         fprintf(out, "%s\n", finalSegmentation.c_str());
         fclose(out);
@@ -385,12 +392,11 @@ int main(int argc, char* argv[])
         loadPOS(argv[10]);
         cerr << POS.size() << endl;
         cerr << sentences.size() << endl;
-        for (int i = 0; i < POS.size(); ++ i) {
+		for (int i = 0; i < POS.size(); ++ i) {
             if (POStokens[i].size() != sentencesTokens[i].size()) {
                 cerr << i << endl;
                 cerr << POS[i] << endl;
                 cerr << sentences[i] << endl;
-                break;
             }
         }
         myAssert(POS.size() == sentences.size(), "[ERROR] sentences numbers mismatched!");
@@ -442,7 +448,6 @@ int main(int argc, char* argv[])
         iter->second = (large[iter->first] + small[iter->first]) / 2.0;
 	}
 	backup = prob;
-
 	for (int _ = 0; _ < 10; ++ _) {
         penalty = (lower + upper) / 2;
 
@@ -455,7 +460,6 @@ int main(int argc, char* argv[])
             upper = penalty;
         }
 	}
-
     if (true) {
         FILE* out = tryOpen(argv[9], "w");
         fprintf(out, "%.10f\n", penalty);

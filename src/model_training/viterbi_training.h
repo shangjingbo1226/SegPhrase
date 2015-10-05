@@ -3,6 +3,7 @@
 
 #include "../utils/helper.h"
 #include <cassert>
+#include <cfloat>
 
 namespace ViterbiTraining
 {

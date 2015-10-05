@@ -1,26 +1,26 @@
 #!/bin/bash
 
-export PYTHON=python
+export PYTHON=pypy
 
-TSV_TEXT='data/10000_text.tsv'
-TSV_POS='data/10000_POS.tsv'
+TSV_TEXT='/srv/data/PubMed/sampled_pubmed.txt'
+TSV_POS='/srv/data/PubMed/sampled_pubmed.tagged.txt'
 
-RAW_TEXT='data/10000_converted_text.txt'
-RAW_POS='data/10000_converted_pos.txt'
+RAW_TEXT='data/converted_text.txt'
+RAW_POS='data/converted_pos.txt'
 
 # preprocessing
 ./bin/align_text_and_POS ${TSV_TEXT} ${TSV_POS} ${RAW_TEXT} ${RAW_POS}
 
 AUTO_LABEL=1
 WORDNET_NOUN=0
-DATA_LABEL='data/wiki.label.auto'
-KNOWLEDGE_BASE='data/wiki_labels_quality.txt'
-KNOWLEDGE_BASE_LARGE='data/wiki_labels_all.txt'
+DATA_LABEL='data/pubmed.label.auto'
+KNOWLEDGE_BASE='data/pubmed_lexicon.txt'
+KNOWLEDGE_BASE_LARGE='data/pubmed_lexicon.txt'
 
 STOPWORD_LIST='data/stopwords.txt'
 SUPPORT_THRESHOLD=10
 
-OMP_NUM_THREADS=20
+OMP_NUM_THREADS=10
 DISCARD_RATIO=0.00
 MAX_ITERATION=5
 
@@ -47,7 +47,7 @@ ${PYTHON} ./src/preprocessing/compute_idf.py -raw ${RAW_TEXT} -o results/wordIDF
 if [ ${AUTO_LABEL} -eq 1 ];
 then
 	echo ===Auto Label Enable===
-    ${PYTHON} src/classification/auto_label_generation.py ${KNOWLEDGE_BASE} ${KNOWLEDGE_BASE_LARGE} results/feature_table_0.csv results/patterns.csv ${DATA_LABEL}
+    python src/classification/auto_label_generation.py ${KNOWLEDGE_BASE} ${KNOWLEDGE_BASE_LARGE} results/feature_table_0.csv results/patterns.csv ${DATA_LABEL}
 else
 	echo ===Auto Label Disable===
 fi
