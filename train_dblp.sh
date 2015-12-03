@@ -1,8 +1,12 @@
 #!/bin/bash
 
 export PYTHON=python
+export PYPY=python
+if type "pypy" > /dev/null; then
+	export PYPY=pypy
+fi
 
-RAW_TEXT='data/DBLP.5K.txt'
+RAW_TEXT='data/DBLP.txt'
 AUTO_LABEL=1
 WORDNET_NOUN=0
 DATA_LABEL='data/wiki.label.auto'
@@ -26,12 +30,18 @@ rm -rf results
 mkdir tmp
 mkdir results
 
+if [ ! -e data/DBLP.txt ]; then
+	echo ===Downloading dataset=== 
+	wget http://dmserv4.cs.illinois.edu/DBLP.txt.gz -O data/DBLP.txt.gz
+	gzip -d data/DBLP.txt.gz -f
+fi
+
 # preprocessing
 ./bin/from_raw_to_binary_text ${RAW_TEXT} tmp/sentencesWithPunc.buf
 
 # frequent phrase mining for phrase candidates
-${PYTHON} ./src/frequent_phrase_mining/main.py -thres ${SUPPORT_THRESHOLD} -o ./results/patterns.csv -raw ${RAW_TEXT}
-${PYTHON} ./src/preprocessing/compute_idf.py -raw ${RAW_TEXT} -o results/wordIDF.txt
+${PYPY} ./src/frequent_phrase_mining/main.py -thres ${SUPPORT_THRESHOLD} -o ./results/patterns.csv -raw ${RAW_TEXT}
+${PYPY} ./src/preprocessing/compute_idf.py -raw ${RAW_TEXT} -o results/wordIDF.txt
 
 # feature extraction
 ./bin/feature_extraction tmp/sentencesWithPunc.buf results/patterns.csv ${STOPWORD_LIST} results/wordIDF.txt results/feature_table_0.csv
@@ -84,9 +94,9 @@ else
 	./bin/combine_phrases results/1.iter${MAX_ITERATION_1}_discard${DISCARD_RATIO}/ results/unified.csv
 fi
 
-${PYTHON} src/postprocessing/filter_by_support.py results/unified.csv results/1.iter${MAX_ITERATION}_discard${DISCARD_RATIO}/segmented.txt ${SUPPORT_THRESHOLD} results/salient.csv 
+${PYPY} src/postprocessing/filter_by_support.py results/unified.csv results/1.iter${MAX_ITERATION}_discard${DISCARD_RATIO}/segmented.txt ${SUPPORT_THRESHOLD} results/salient.csv 
 	
 if [ ${WORDNET_NOUN} -eq 1 ];
 then
-    ${PYTHON} src/postprocessing/clean_list_with_wordnet.py -input results/salient.csv -output results/salient.csv 
+    ${PYPY} src/postprocessing/clean_list_with_wordnet.py -input results/salient.csv -output results/salient.csv 
 fi
