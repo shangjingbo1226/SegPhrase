@@ -26,7 +26,7 @@ void printVector(vector<string> a) {
 
 unordered_set<string> dict;
 
-void loadRankList(string filename, int topN)
+void loadRankList(string filename, double topNRatio)
 {
     FILE* in = tryOpen(filename, "r");
     vector<pair<double, string>> order;
@@ -43,13 +43,11 @@ void loadRankList(string filename, int topN)
         order.push_back(make_pair(score, word));
     }
     sort(order.rbegin(), order.rend());
-
-    if (topN < 0) {
-        topN = order.size();
+    int topN = 0;
+    if (topNRatio <= 0 || topNRatio > 1) {
+        topNRatio = 0.5;
     }
-    if (topN < order.size()) {
-        order.resize(topN);
-    }
+    order.resize(order.size() * topNRatio);
     dict.clear();
     FOR (pair, order) {
         dict.insert(pair->second);
@@ -119,8 +117,8 @@ string translate(vector<pair<string, bool>> &segments, bool clean_mode, string &
 
 int main(int argc, char* argv[])
 {
-    int topN;
-    if (argc != 7 || sscanf(argv[3], "%d", &topN) != 1) {
+    double topNRatio;
+    if (argc != 7 || sscanf(argv[3], "%lf", &topNRatio) != 1) {
         cerr << "[usage] <model-file> <rank-list> <top-n> <corpus_in> <segmented_out> <clean_mode>" << endl;
         return -1;
     }
@@ -130,7 +128,7 @@ int main(int argc, char* argv[])
     SegPhraseParser* parser = new SegPhraseParser(model_path, 0);
     cerr << "parser built." << endl;
 
-    loadRankList(argv[2], topN);
+    loadRankList(argv[2], topNRatio);
     parser->setDict(dict);
 
     FILE* in = tryOpen(argv[4], "r");

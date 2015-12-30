@@ -100,4 +100,4 @@ Alpha is used in the label propagation from phrases to unigrams.
 ```
 ./bin/segphrase_parser results/segmentation.model results/salient.csv 50000 ./data/test.txt ./results/parsed.txt 0
 ```
-The first parameter is the segmentation model, which we saved in training process. The second parameter is the high quality phrases ranking list (together with unigrams). **The third one determines how many top ranked phrases (unigrams) will be considered in this run of segmentation.** This parameter should be dataset and application specific. The later two are the input and the output of corpus. The last one is a debug flag and you can just leave it as 0.
+The first parameter is the segmentation model, which we saved in training process. The second parameter is the high quality phrases ranking list (together with unigrams). **The third one determines the ratio of top ranked phrases (unigrams) will be considered in this run of segmentation.** This parameter should be dataset and application specific. The later two are the input and the output of corpus. The last one is a debug flag and you can just leave it as 0.
