@@ -30,6 +30,9 @@ void loadRankList(string filename, double topNRatio)
 {
     FILE* in = tryOpen(filename, "r");
     vector<pair<double, string>> order;
+    if (topNRatio <= 0 || topNRatio > 1) {
+        topNRatio = 0.5;
+    }
     while (getLine(in)) {
         vector<string> tokens = splitBy(line, ',');
         string word = tokens[0];
@@ -40,14 +43,11 @@ void loadRankList(string filename, double topNRatio)
                 word[i] = ' ';
             }
         }
-        order.push_back(make_pair(score, word));
+        if (score > topNRatio) {
+            order.push_back(make_pair(score, word));
+        }
     }
     sort(order.rbegin(), order.rend());
-    int topN = 0;
-    if (topNRatio <= 0 || topNRatio > 1) {
-        topNRatio = 0.5;
-    }
-    order.resize(order.size() * topNRatio);
     dict.clear();
     FOR (pair, order) {
         dict.insert(pair->second);
@@ -127,9 +127,9 @@ int main(int argc, char* argv[])
     string model_path = (string)argv[1];
     SegPhraseParser* parser = new SegPhraseParser(model_path, 0);
     cerr << "parser built." << endl;
-
+    
     loadRankList(argv[2], topNRatio);
-    parser->setDict(dict);
+	parser->setDict(dict);
 
     FILE* in = tryOpen(argv[4], "r");
     FILE* out = tryOpen(argv[5], "w");

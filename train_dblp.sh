@@ -7,9 +7,9 @@ if type "pypy" > /dev/null; then
 fi
 
 RAW_TEXT='data/DBLP.txt'
-AUTO_LABEL=1
+AUTO_LABEL=0
 WORDNET_NOUN=0
-DATA_LABEL='data/wiki.label.auto'
+DATA_LABEL='data/DBLP.label'
 KNOWLEDGE_BASE='data/wiki_labels_quality.txt'
 KNOWLEDGE_BASE_LARGE='data/wiki_labels_all.txt'
 
