@@ -63,7 +63,7 @@ def main(argv):
     rank = []
     for token, occur in occurrence.items():
         tf = occur / float(tokensN)
-        idf = log(docsN / float(inDocs[token]))
+        idf = max(log(docsN / float(inDocs[token])), 1e-10)
         rank.append((token, tf * idf))
     sorted_x = sorted(rank, key=lambda x: -x[1])
     
