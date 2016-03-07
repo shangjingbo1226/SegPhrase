@@ -42,11 +42,12 @@ $ make
 ## Default Run
 
 ```
-$ ./train.sh  #train a segmenter and output phrase list as results/salient.csv
+$ ./train_toy.sh  #train a toy segmenter and output phrase list as results/unified.csv
+$ ./train_dblp.sh  #train a segmenter and output phrase list for DBLP data
 $ ./parse.sh  #use the segmenter to parse new documents
 ```
 
-## Parameters - train.sh
+## Parameters - training
 
 ```
 RAW_TEXT=data/DBLP.5K.txt
