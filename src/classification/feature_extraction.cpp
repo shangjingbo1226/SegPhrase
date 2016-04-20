@@ -131,7 +131,7 @@ vector<string> printStopwords(MAP_S_D &patterns)
         if (cnt > 0) {
             sum /= cnt;
         }
-        sprintf(temp, "%.10f,%.10f,%d,%d", sum, (double)stopCnt / tokens.size(), stopwords.count(tokens[0]), stopwords.count(tokens[1]));
+        sprintf(temp, "%.10f,%.10f,%d,%d", sum, (double)stopCnt / tokens.size(), stopwords.count(tokens[0]), stopwords.count(tokens[tokens.size() - 1]));
         ret.push_back(temp);
     }
     return ret;
