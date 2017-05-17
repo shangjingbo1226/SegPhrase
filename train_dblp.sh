@@ -32,7 +32,8 @@ mkdir results
 
 if [ ! -e data/DBLP.txt ]; then
 	echo ===Downloading dataset=== 
-	wget http://dmserv4.cs.illinois.edu/DBLP.txt.gz -O data/DBLP.txt.gz
+	curl http://dmserv2.cs.illinois.edu/data/DBLP.txt.gz --output data/DBLP.txt.gz
+#	wget http://dmserv4.cs.illinois.edu/DBLP.txt.gz -O data/DBLP.txt.gz
 	gzip -d data/DBLP.txt.gz -f
 fi
 
