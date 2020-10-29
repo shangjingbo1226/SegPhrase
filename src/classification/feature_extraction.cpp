@@ -297,7 +297,7 @@ int main(int argc, char* argv[])
             bool valid = true;
             for (int i = st; i < ed && valid; ++ i) {
                 if (isalpha(alpha[i]) && (i == st || alpha[i - 1] == ' ')) {
-                    if (text[i] < 'A' && text[i] > 'Z') {
+                    if (text[i] < 'A' || text[i] > 'Z') {
                         valid = false;
                     }
                 }
